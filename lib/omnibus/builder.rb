@@ -139,12 +139,12 @@ module Omnibus
       end
 
       plevel = args[:plevel] || 1
-      if args[:target] 
+      if args[:target]
         target = File.expand_path("#{project_dir}/#{args[:target]}")
-        @build_commands << 
+        @build_commands <<
          "cat #{source} | patch -p#{plevel} #{target}"
       else
-        @build_commands << 
+        @build_commands <<
          "patch -d #{project_dir} -p#{plevel} -i #{source}"
       end
     end
@@ -202,6 +202,10 @@ module Omnibus
       end
     end
 
+    def default_env
+      @software.default_env
+    end
+
     private
 
     def execute_proc(cmd)
@@ -229,6 +233,15 @@ module Omnibus
         cmd_args << options
       end
 
+      unless default_env.nil?
+        if cmd_args.last.key?(:env)
+          # merge default_env keys only if they're not already set (see Hash#merge! docs)
+          cmd_args.last[:env].merge!(default_env) { |k,v1,v2| v1 }
+        else
+          cmd_args.last[:env] = default_env
+        end
+      end
+
       cmd_string = cmd_args[0..-2].join(' ')
       cmd_opts_for_display = to_kv_str(cmd_args.last)
 
@@ -246,7 +259,7 @@ module Omnibus
       # Getting lots of errors from github, particularly with erlang/rebar
       # projects fetching tons of deps via git all the time. This isn't a
       # particularly elegant way to solve that problem. But it should work.
-      if retries >= 3
+      if retries >=  ( ENV['OMNIBUS_RETRIES'] || 3 ).to_i
         ErrorReporter.new(e, self).explain("Failed to build #{name} while running `#{cmd_string}` with #{cmd_opts_for_display}")
         raise
       else

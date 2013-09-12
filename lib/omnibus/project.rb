@@ -68,6 +68,8 @@ module Omnibus
       @dependencies = Array.new
       @runtime_dependencies = Array.new
       instance_eval(io)
+      init_default_env
+
       validate
 
       @library = Omnibus::Library.new(self)
@@ -405,9 +407,52 @@ module Omnibus
       @dependencies.include?(name)
     end
 
+    # Default environment variables for all build commands in this software project.
+    #
+    # This can be set to nil to remove the default environment entirely.  It can also
+    # be overridden in the software project.
+    #
+    # @param env_hash [Hash]
+    # @return [Hash]
+    def default_env(val=NULL_ARG)
+      @default_env = val unless val.equal?(NULL_ARG)
+      @default_env
+    end
+
     # @!endgroup
 
     private
+
+    def init_default_env
+      @default_env =
+        case platform_family
+        when 'debian', 'redhat', 'fedora'
+          {
+            "LDFLAGS" => "-Wl,-rpath #{install_path}/embedded/lib -L#{install_path}/embedded/lib -I#{install_path}/embedded/include",
+            "CFLAGS" => "-I#{install_path}/embedded/include -L#{install_path}/embedded/lib"
+          }
+        when 'solaris2'
+          {
+            "LDFLAGS" => "-R#{install_dir}/embedded/lib -L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
+            "CFLAGS" => "-I#{install_dir}/embedded/include -L#{install_dir}/embedded/lib"
+          }
+        when 'aix'
+          {
+            "CC" => "gcc",
+            "CXX" => "g++",
+            "LDFLAGS" => "-Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib -L#{install_dir}/embedded/lib",
+            "CFLAGS" => "-I#{install_dir}/embedded/include"
+          }
+        when 'mac_os_x'
+          {
+            "LDFLAGS" => "-R#{install_dir}/embedded/lib -L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
+            "CFLAGS" => "-I#{install_dir}/embedded/include -L#{install_dir}/embedded/lib"
+          }
+        else
+          {}
+        end
+    end
+
 
     # An Array of platform data suitable for `Artifact.new`. This will go into
     # metadata generated for the artifact, and be used for the file hierarchy

@@ -82,6 +82,9 @@ module Omnibus
       @project          = project
       @always_build     = false
 
+      # deep copy so that we can mutate strings without polluting other software defs
+      @default_env = Marshal.load(Marshal.dump(project.default_env))
+
       # Seems like this should just be Builder.new(self) instead
       @builder = NullBuilder.new(self)
 
@@ -352,6 +355,17 @@ module Omnibus
     # @todo Is this used?  Doesn't appear to be...
     def architecture
       OHAI.kernel['machine'] =~ /sun/ ? "sparc" : "intel"
+    end
+
+    # Override the default environment set at the project level.
+    #
+    # This can be set to nil to remove the default environment entirely.
+    #
+    # @param env_hash [Hash]
+    # @return [Hash]
+    def default_env(val=NULL_ARG)
+      @default_env = val unless val.equal?(NULL_ARG)
+      @default_env
     end
 
     private
