@@ -447,10 +447,13 @@ module Omnibus
           }
         when 'aix'
           {
-            "CC" => "gcc",
-            "CXX" => "g++",
-            "LDFLAGS" => "-Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib -L#{install_dir}/embedded/lib",
-            "CFLAGS" => "-I#{install_dir}/embedded/include"
+            # 64-bit compilation with gcc by default, Opscode favors gcc over xlc
+            "CC" => "gcc -maix64",
+            "CXX" => "g++ -maix64",
+            "ARFLAGS" => "-X64 cru",
+            "OBJECT_MODE" => "64",
+            "LDFLAGS" => "-maix64 -Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib -L#{install_dir}/embedded/lib",
+            "CFLAGS" => "-maix64 -I#{install_dir}/embedded/include"
           }
         when 'mac_os_x'
           {
