@@ -423,18 +423,27 @@ module Omnibus
 
     private
 
+    # Opinionated Opscode defaults for building Omnibus packages.
+    #
+    # Use "default_env nil" in your project file to avoid using these, or set your own project default_env.
+    #
+    # Since Omnibus is fundamentally *about* compiling in your own deps and setting RPATHs in binaries to search for libs, we
+    # do that here in order to only do it once across all projects.  We use the embedded/lib and embedded/include conventions
+    # by default.  Open source users of omnibus should either adhere to our conventions, or else must override this.
+    #
     def init_default_env
       @default_env =
         case platform_family
-        when 'debian', 'redhat', 'fedora'
+        when 'debian', 'redhat', 'fedora', 'freebsd'
           {
             "LDFLAGS" => "-Wl,-rpath #{install_path}/embedded/lib -L#{install_path}/embedded/lib -I#{install_path}/embedded/include",
             "CFLAGS" => "-I#{install_path}/embedded/include -L#{install_path}/embedded/lib"
           }
         when 'solaris2'
           {
-            "LDFLAGS" => "-R#{install_dir}/embedded/lib -L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include",
-            "CFLAGS" => "-I#{install_dir}/embedded/include -L#{install_dir}/embedded/lib"
+            "LDFLAGS" => "-R #{install_dir}/embedded/lib -L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include -static-libgcc",
+            "CFLAGS" => "-L#{install_dir}/embedded/lib -I#{install_dir}/embedded/include -static-libgcc",
+            "LD_RUN_PATH" => "#{install_dir}/embedded/lib"
           }
         when 'aix'
           {
