@@ -39,6 +39,27 @@ module Omnibus
       hashes.map { |v| v[selector_key] }.compact
     end
 
+    def component_manifest(project)
+      version_map = project.library.version_map
+      versions = non_nil_values(version_map.values, :version)
+      guids = non_nil_values(version_map.values, :version_guid)
+      overridden_versions = non_nil_values(version_map.values.select { |v| v[:overridden] }, :default_version)
+
+
+    end
+
+    def to_hash(project)
+      {
+        'name' => project.name,
+        'build_version' => project.build_version,
+        'components' => project.library.version_map
+      }
+    end
+
+    def json_version_map(project)
+      JSON.generate(to_hash(project))
+    end
+
     def pretty_version_map(project)
       out = ''
       version_map = project.library.version_map
