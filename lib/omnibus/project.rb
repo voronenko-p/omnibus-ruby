@@ -61,7 +61,8 @@ module Omnibus
       @install_path = nil
       @homepage = nil
       @description = nil
-      @replaces = nil
+      @replaces = []
+      @provides = []
       @mac_pkg_identifier = nil
       @overrides = {}
 
@@ -204,9 +205,8 @@ module Omnibus
     #
     # @todo Consider having this default to {#package_name}; many uses of this
     #   method effectively do this already.
-    def replaces(val = NULL_ARG)
-      @replaces = val unless val.equal?(NULL_ARG)
-      @replaces
+    def replaces(val)
+      @replaces << val
     end
 
     # Add to the list of packages this one conflicts with.
@@ -218,6 +218,17 @@ module Omnibus
     # @return [void]
     def conflict(val)
       @conflicts << val
+    end
+
+    # Add to the list of packages this one provides.
+    #
+    # Specifying provides is optional.  See the `--provides` flag in
+    # {https://github.com/jordansissel/fpm fpm}.
+    #
+    # @param val [String]
+    # @return [void]
+    def provides(val)
+      @provides << val
     end
 
     # Set or retrieve the version of the project.
@@ -703,6 +714,14 @@ module Omnibus
         command_and_opts << "--conflicts '#{conflict}'"
       end
 
+      @provides.each do |provide|
+        command_and_opts << "--provides '#{provide}'"
+      end
+
+      @replaces.each do |replace|
+        command_and_opts << "--replaces '#{replace}'"
+      end
+
       if @pkg_user
         %w(deb rpm solaris).each do |type|
           command_and_opts << " --#{type}-user #{@pkg_user}"
@@ -715,7 +734,6 @@ module Omnibus
         end
       end
 
-      command_and_opts << " --replaces #{@replaces}" if @replaces
       command_and_opts << install_path
 
       @extra_package_files.each do |files|
