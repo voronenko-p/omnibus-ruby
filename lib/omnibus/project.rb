@@ -672,6 +672,21 @@ module Omnibus
         command_and_opts << "--after-remove '#{File.join(package_scripts_path, "postrm")}'"
       end
 
+      # This is RPM only
+      if File.exist?("#{package_scripts_path}/pretrans")
+        command_and_opts << "--rpm-pretrans '#{File.join(package_scripts_path, "pretrans")}'"
+      end
+
+      # This is RPM only
+      if File.exist?("#{package_scripts_path}/posttrans")
+        command_and_opts << "--rpm-posttrans '#{File.join(package_scripts_path, "posttrans")}'"
+      end
+
+      # This is RPM only
+      if File.exist?("#{package_scripts_path}/verifyscript")
+        command_and_opts << "--rpm-verifyscript '#{File.join(package_scripts_path, "verifyscript")}'"
+      end
+
       @exclusions.each do |pattern|
         command_and_opts << "--exclude '#{pattern}'"
       end

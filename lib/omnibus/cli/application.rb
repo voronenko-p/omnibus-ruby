@@ -82,7 +82,7 @@ module Omnibus
         template(File.join('Berksfile.erb'), File.join(target, 'Berksfile'), opts)
 
         # render out stub packge scripts
-        %w(makeselfinst preinst prerm postinst postrm).each do |package_script|
+        %w(makeselfinst preinst prerm postinst postrm pretrans posttrans verifyscript).each do |package_script|
           script_path = File.join(target, 'package-scripts', name, package_script)
           template_path = File.join('package_scripts', "#{package_script}.erb")
           # render the package script
