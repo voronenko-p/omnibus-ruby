@@ -61,6 +61,7 @@ module Omnibus
       @install_path = nil
       @homepage = nil
       @description = nil
+      @epoch = nil
       @replaces = []
       @provides = []
       @mac_pkg_identifier = nil
@@ -267,6 +268,19 @@ module Omnibus
     def package_user(val = NULL_ARG)
       @pkg_user = val unless val.equal?(NULL_ARG)
       @pkg_user
+    end
+
+    # Set or retrieve the epoch of the package
+    #
+    # Ultimately used as the value for the `--epoch` flag in
+    # {https://github.com/jordansissel/fpm fpm}.
+    #
+    # @param val [String] the value of the epoch
+    # @return [String]
+    #
+    def epoch(val = NULL_ARG)
+      @epoch = val unless val.equal?(NULL_ARG)
+      @epoch
     end
 
     # Set or retrieve the full overrides hash for all software being overridden.  Calling it as
@@ -733,6 +747,8 @@ module Omnibus
           command_and_opts << " --#{type}-group #{@pkg_group}"
         end
       end
+
+      command_and_opts << " --epoch #{@epoch}" if @epoch
 
       command_and_opts << install_path
 
