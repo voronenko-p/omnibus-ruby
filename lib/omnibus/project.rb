@@ -703,6 +703,7 @@ module Omnibus
         "-m '#{maintainer}'",
         "--description '#{description}'",
         "--url #{homepage}",
+        "-a all",
       ]
 
       if File.exist?(File.join(package_scripts_path, 'preinst'))
