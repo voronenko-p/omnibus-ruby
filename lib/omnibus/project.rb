@@ -66,6 +66,7 @@ module Omnibus
       @provides = []
       @mac_pkg_identifier = nil
       @overrides = {}
+      @vendor = nil
 
       @exclusions = []
       @conflicts = []
@@ -275,12 +276,25 @@ module Omnibus
     # Ultimately used as the value for the `--epoch` flag in
     # {https://github.com/jordansissel/fpm fpm}.
     #
-    # @param val [String] the value of the epoch
-    # @return [String]
+    # @param val [int] the value of the epoch
+    # @return [int]
     #
     def epoch(val = NULL_ARG)
       @epoch = val unless val.equal?(NULL_ARG)
       @epoch
+    end
+
+    # Set or retrieve the vendor of the package
+    #
+    # Ultimately used as the value for the `--vendor` flag in
+    # {https://github.com/jordansissel/fpm fpm}.
+    #
+    # @param val [String] the vendor
+    # @return [String]
+    #
+    def vendor(val = NULL_ARG)
+      @vendor = val unless val.equal?(NULL_ARG)
+      @vendor
     end
 
     # Set or retrieve the full overrides hash for all software being overridden.  Calling it as
@@ -749,6 +763,7 @@ module Omnibus
       end
 
       command_and_opts << " --epoch #{@epoch}" if @epoch
+      command_and_opts << " --vendor #{@vendor}" if @vendor
 
       command_and_opts << install_path
 
