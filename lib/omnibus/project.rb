@@ -688,7 +688,7 @@ module Omnibus
         "-t #{pkg_type}",
         "-v #{build_version}",
         "-n #{package_name}",
-        "-p #{output_package(pkg_type)}",
+        #{}"-p #{output_package(pkg_type)}",
         "--iteration #{iteration}",
         "-m '#{maintainer}'",
         "--description '#{description}'",
