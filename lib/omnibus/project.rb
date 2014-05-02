@@ -170,22 +170,25 @@ module Omnibus
     #
     # @return [String]
     def iteration
-      "#{build_iteration}" unless platform_in_iteration
-      case platform_family
-      when 'rhel'
-        platform_version =~ /^(\d+)/
-        maj = Regexp.last_match[1]
-        "#{build_iteration}.el#{maj}"
-      when 'freebsd'
-        platform_version =~ /^(\d+)/
-        maj = Regexp.last_match[1]
-        "#{build_iteration}.#{platform}.#{maj}.#{machine}"
-      when 'windows'
-        "#{build_iteration}.windows"
-      when 'aix', 'debian'
-        "#{build_iteration}"
+      unless platform_in_iteration
+        "#{build_iteration}" 
       else
-        "#{build_iteration}.#{platform}.#{platform_version}"
+        case platform_family
+        when 'rhel'
+          platform_version =~ /^(\d+)/
+          maj = Regexp.last_match[1]
+          "#{build_iteration}.el#{maj}"
+        when 'freebsd'
+          platform_version =~ /^(\d+)/
+          maj = Regexp.last_match[1]
+          "#{build_iteration}.#{platform}.#{maj}.#{machine}"
+        when 'windows'
+          "#{build_iteration}.windows"
+        when 'aix', 'debian'
+          "#{build_iteration}"
+        else
+          "#{build_iteration}.#{platform}.#{platform_version}"
+        end
       end
     end
 
