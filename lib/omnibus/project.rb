@@ -902,7 +902,9 @@ PSTAMP=#{`hostname`.chomp + Time.now.utc.iso8601}
     # sets `output_package`
     # @return void
     def run_fpm(pkg_type)
-      run_package_command(fpm_command(pkg_type).join(' '))
+      fpm_com = fpm_command(pkg_type).join(' ')
+      puts "[FPM] Running #{fpm_com}"
+      run_package_command(fpm_com)
     end
 
     # Executes the given command via mixlib-shellout.
