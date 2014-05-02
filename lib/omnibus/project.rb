@@ -67,6 +67,7 @@ module Omnibus
       @mac_pkg_identifier = nil
       @overrides = {}
       @vendor = nil
+      @platform_in_iteration = true
 
       @exclusions = []
       @conflicts = []
@@ -156,6 +157,11 @@ module Omnibus
       @homepage || fail(MissingProjectConfiguration.new('homepage', 'http://www.getchef.com'))
     end
 
+    def platform_in_iteration(val = NULL_ARG)
+      @platform_in_iteration = val unless val.equal?(NULL_ARG)
+      @platform_in_iteration
+    end
+
     # Defines the iteration for the package to be generated.  Adheres
     # to the conventions of the platform for which the package is
     # being built.
@@ -164,6 +170,7 @@ module Omnibus
     #
     # @return [String]
     def iteration
+      "#{{build_iteration}}" unless platform_in_iteration
       case platform_family
       when 'rhel'
         platform_version =~ /^(\d+)/
