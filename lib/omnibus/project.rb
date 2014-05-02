@@ -170,7 +170,7 @@ module Omnibus
     #
     # @return [String]
     def iteration
-      "#{{build_iteration}}" unless platform_in_iteration
+      "#{build_iteration}" unless platform_in_iteration
       case platform_family
       when 'rhel'
         platform_version =~ /^(\d+)/
