@@ -839,8 +839,6 @@ module Omnibus
       command_and_opts << " --epoch #{@epoch}" if @epoch
       command_and_opts << " --vendor #{@vendor}" if @vendor
 
-      command_and_opts << install_path
-
       # All project files must be appended to the command "last", but before
       # the final install path
       @extra_package_files.each do |files|
