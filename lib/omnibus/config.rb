@@ -40,6 +40,15 @@ module Omnibus
     #   @return [String]
     default :cache_dir, '/var/cache/omnibus/cache'
 
+    # @!attribute [rw] install_path_cache_dir
+    #   The absolute path to the directory on the virtual machine where
+    #   install paths will be progressively cached.
+    #
+    #   Defaults to `"/var/cache/omnibus/cache/install_path"`.
+    #
+    #   @return [String]
+    default :install_path_cache_dir, '/var/cache/omnibus/cache/install_path'
+
     # @!attribute [rw] source_dir
     #   The absolute path to the directory on the virtual machine where
     #   source code will be downloaded.
@@ -115,6 +124,30 @@ module Omnibus
     #
     #   @return [String]
     default :install_dir, '/opt/chef'
+
+    # @!endgroup
+
+    # @!group DMG configuration options
+
+    # @!attribute [rw] build_dmg
+    #   Package OSX pkg files inside a DMG
+    #
+    # @return [Boolean]
+    default :build_dmg, true
+
+    # @!attribute [rw] dmg_window_bounds
+    #   Indicate the starting x,y and ending x,y positions for the created DMG
+    #   window.
+    #
+    # @return [String]
+    default :dmg_window_bounds, '100, 100, 750, 600'
+
+    # @!attribute [rw] dmg_pkg_position
+    #   Indicate the starting x,y position where the .pkg file should live in
+    #   the DMG window.
+    #
+    # @return [String]
+    default :dmg_pkg_position, '535, 50'
 
     # @!endgroup
 

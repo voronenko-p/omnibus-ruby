@@ -66,6 +66,7 @@ module Omnibus
       /libcrypto.so/,
       /libcurses\.so/,
       /libdoor\.so/,
+      /libgcc_s\.so\.1/,
       /libgen\.so/,
       /libmd5\.so/,
       /libmd\.so/,
@@ -122,6 +123,7 @@ module Omnibus
       /libncurses\.5\.4\.dylib/,
       /libiconv/,
       /libstdc\+\+\.6\.dylib/,
+      /libc\+\+\.1\.dylib/,
     ]
 
     FREEBSD_WHITELIST_LIBS = [
