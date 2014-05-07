@@ -65,6 +65,7 @@ module Omnibus
       @provides = []
       @mac_pkg_identifier = nil
       @overrides = {}
+      @configfiles =[]
       @vendor = nil
       @platform_in_iteration = true
 
@@ -289,6 +290,17 @@ module Omnibus
     # @return [void]
     def conflict(val)
       @conflicts << val
+    end
+
+    # Add to the list of config files.
+    #
+    # Specifying config files is optional.  See the `--config-files` flag in
+    # {https://github.com/jordansissel/fpm fpm}.
+    #
+    # @param val [String]
+    # @return [void]
+    def configfile(val)
+      @configfiles << val
     end
 
     # Add to the list of packages this one provides.
@@ -814,6 +826,10 @@ module Omnibus
 
       @conflicts.each do |conflict|
         command_and_opts << "--conflicts '#{conflict}'"
+      end
+
+      @configfiles.each do |configfile|
+        command_and_opts << "--config-files '#{configfile}'"
       end
 
       @provides.each do |provide|
