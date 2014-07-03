@@ -29,6 +29,7 @@ module Omnibus
       /libpthread/,
       /libresolv\.so/,
       /librt\.so/,
+      /librrd\.so/,
       /libstdc\+\+\.so/,
       /libutil\.so/,
       /linux-vdso.+/,
