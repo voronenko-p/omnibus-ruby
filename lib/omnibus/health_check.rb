@@ -34,6 +34,7 @@ module Omnibus
       /libutil\.so/,
       /linux-vdso.+/,
       /linux-gate\.so/,
+      /rrdtoolmodule\.so/,
     ]
 
     ARCH_WHITELIST_LIBS = [
