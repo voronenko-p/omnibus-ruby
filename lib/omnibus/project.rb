@@ -632,8 +632,8 @@ module Omnibus
     expose :exclude
 
     def replaces(val)
-      @replaces << val
-      @replaces.dup
+      @replaced << val
+      @replaced.dup
     end
     expose :replaces
 
@@ -876,8 +876,8 @@ module Omnibus
     #
     # @return [Array<String>]
     #
-    def replaces
-      @replaces ||= []
+    def replaced
+      @replaced ||= []
     end
 
     #
@@ -1280,7 +1280,7 @@ module Omnibus
         command_and_opts << "--provides '#{provide}'"
       end
 
-      replaces.each do |replace|
+      replaced.each do |replace|
         command_and_opts << "--replaces '#{replace}'"
       end
 
