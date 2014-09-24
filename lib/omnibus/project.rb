@@ -632,8 +632,8 @@ module Omnibus
     expose :exclude
 
     def replaces(val)
-      @replaced << val
-      @replaced.dup
+      replaced << val
+      replaced.dup
     end
     expose :replaces
 
