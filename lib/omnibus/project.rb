@@ -296,6 +296,7 @@ module Omnibus
         @platform_in_iteration ||= true
       else
         @platform_in_iteration = val
+      end
     end
     expose :platform_in_iteration
 
