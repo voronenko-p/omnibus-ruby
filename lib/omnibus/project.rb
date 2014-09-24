@@ -638,8 +638,8 @@ module Omnibus
     expose :replaces
 
     def provides(val)
-      @provides << val
-      @provides.dup
+      provided << val
+      provided.dup
     end
     expose :provides
 
@@ -885,8 +885,8 @@ module Omnibus
     #
     # @return [Array<String>]
     #
-    def provides
-      @provides ||= []
+    def provided
+      @provided ||= []
     end
 
 
@@ -1276,7 +1276,7 @@ module Omnibus
         command_and_opts << "--config-files '#{config_file}'"
       end
 
-      provides.each do |provide|
+      provided.each do |provide|
         command_and_opts << "--provides '#{provide}'"
       end
 
