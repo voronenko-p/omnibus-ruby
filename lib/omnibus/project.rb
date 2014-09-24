@@ -273,6 +273,32 @@ module Omnibus
     end
     expose :homepage
 
+    def vendor(val = NULL)
+      if null?(val)
+        @vendor
+      else
+        @vendor = val
+      end
+    end
+    expose :vendor
+
+    def epoch(val = NULL)
+      if null?(val)
+        @epoch
+      else
+        @epoch = val
+      end
+    end
+    expose :epoch
+
+    def platform_in_iteration(val = NULL)
+      if null?(val)
+        @platform_in_iteration ||= true
+      else
+        @platform_in_iteration = val
+    end
+    expose :platform_in_iteration
+
     #
     # Set or retrieve the project description.
     #
@@ -295,33 +321,6 @@ module Omnibus
       end
     end
     expose :description
-
-    #
-    # Set or retrieve the name of the package this package will replace.
-    #
-    # Ultimately used as the value for the +--replaces+ flag in
-    # {https://github.com/jordansissel/fpm fpm}.
-    #
-    # This should only be used when renaming a package and obsoleting the old
-    # name of the package. Setting this to the same name as package_name will
-    # cause RPM upgrades to fail.
-    #
-    # @example
-    #   replace 'the-old-package'
-    #
-    # @param [String] val
-    #   the name of the package to replace
-    #
-    # @return [String]
-    #
-    def replaces(val = NULL)
-      if null?(val)
-        @replaces
-      else
-        @replaces = val
-      end
-    end
-    expose :replaces
 
     #
     # Add to the list of packages this one conflicts with.
@@ -631,6 +630,18 @@ module Omnibus
     end
     expose :exclude
 
+    def replaces(val)
+      @replaces << val
+      @replaces.dup
+    end
+    expose :replaces
+
+    def provides(val)
+      @provides << val
+      @provides.dup
+    end
+    expose :provides
+
     #
     # Add a config file.
     #
@@ -860,6 +871,25 @@ module Omnibus
     end
 
     #
+    # The list of replacements for this project.
+    #
+    # @return [Array<String>]
+    #
+    def replaces
+      @replaces ||= []
+    end
+
+    #
+    # The list of provides for this project.
+    #
+    # @return [Array<String>]
+    #
+    def provides
+      @provides ||= []
+    end
+
+
+    #
     # Retrieve the list of overrides for all software being overridden.
     #
     # @return [Hash]
@@ -937,21 +967,25 @@ module Omnibus
     #
     # @return [String]
     def iteration
-      case Ohai['platform_family']
-      when 'rhel'
-        Ohai['platform_version'] =~ /^(\d+)/
-        maj = Regexp.last_match[1]
-        "#{build_iteration}.el#{maj}"
-      when 'freebsd'
-        Ohai['platform_version'] =~ /^(\d+)/
-        maj = Regexp.last_match[1]
-        "#{build_iteration}.#{Ohai['platform']}.#{maj}.#{Ohai['kernel']['machine']}"
-      when 'windows'
-        "#{build_iteration}.windows"
-      when 'aix', 'debian', 'mac_os_x'
-        "#{build_iteration}"
+      unless platform_in_iteration
+        "#{build_iteration}" 
       else
-        "#{build_iteration}.#{Ohai['platform']}.#{Ohai['platform_version']}"
+        case Ohai['platform_family']
+        when 'rhel'
+          Ohai['platform_version'] =~ /^(\d+)/
+          maj = Regexp.last_match[1]
+          "#{build_iteration}.el#{maj}"
+        when 'freebsd'
+          Ohai['platform_version'] =~ /^(\d+)/
+          maj = Regexp.last_match[1]
+          "#{build_iteration}.#{Ohai['platform']}.#{maj}.#{Ohai['kernel']['machine']}"
+        when 'windows'
+          "#{build_iteration}.windows"
+        when 'aix', 'debian', 'mac_os_x'
+          "#{build_iteration}"
+        else
+          "#{build_iteration}.#{Ohai['platform']}.#{Ohai['platform_version']}"
+        end
       end
     end
 
@@ -1025,8 +1059,6 @@ module Omnibus
     # @return [void]
     def validate
       name && install_dir && maintainer && homepage
-      if package_name == replaces
-        log.warn { BadReplacesLine.new.message }
       end
     end
 
@@ -1196,12 +1228,29 @@ module Omnibus
         "-t #{pkg_type}",
         "-v #{build_version}",
         "-n #{package_name}",
-        "-p #{output_package(pkg_type)}",
+        # Fixme remi: Disable that in a cleaner way
+        #{ }"-p #{output_package(pkg_type)}", disabled for datadog. 
         "--iteration #{iteration}",
         "-m '#{maintainer}'",
         "--description '#{description}'",
         "--url #{homepage}",
       ]
+
+      # This is RPM only
+      if File.exist?("#{package_scripts_path}/pretrans")
+        command_and_opts << "--rpm-pretrans '#{File.join(package_scripts_path, "pretrans")}'"
+      end
+
+      # This is RPM only
+      if File.exist?("#{package_scripts_path}/posttrans")
+        command_and_opts << "--rpm-posttrans '#{File.join(package_scripts_path, "posttrans")}'"
+      end
+
+      # This is RPM only
+      if File.exist?("#{package_scripts_path}/verifyscript")
+        command_and_opts << "--rpm-verifyscript '#{File.join(package_scripts_path, "verifyscript")}'"
+      end
+
 
       if File.exist?(File.join(package_scripts_path, 'preinst'))
         command_and_opts << "--before-install '#{File.join(package_scripts_path, "preinst")}'"
@@ -1227,6 +1276,14 @@ module Omnibus
         command_and_opts << "--config-files '#{config_file}'"
       end
 
+      provides.each do |provide|
+        command_and_opts << "--provides '#{provide}'"
+      end
+
+      replaces.each do |replace|
+        command_and_opts << "--replaces '#{replace}'"
+      end
+
       runtime_dependencies.each do |runtime_dep|
         command_and_opts << "--depends '#{runtime_dep}'"
       end
@@ -1247,7 +1304,8 @@ module Omnibus
         end
       end
 
-      command_and_opts << " --replaces #{replaces}" if replaces
+      command_and_opts << " --epoch #{epoch}" if epoch
+      command_and_opts << " --vendor #{vendor}" if vendor
 
       # All project files must be appended to the command "last", but before
       # the final install path
@@ -1388,7 +1446,9 @@ PSTAMP=#{`hostname`.chomp + Time.now.utc.iso8601}
     # sets +output_package+
     # @return void
     def run_fpm(pkg_type)
-      run_package_command(fpm_command(pkg_type).join(' '))
+      fpm_com = fpm_command(pkg_type).join(' ')
+      puts "[FPM] Running #{fpm_com}"
+      run_package_command(fpm_com)
     end
 
     # Executes the given command via mixlib-shellout.

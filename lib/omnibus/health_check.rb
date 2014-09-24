@@ -31,10 +31,12 @@ module Omnibus
       /libpthread/,
       /libresolv\.so/,
       /librt\.so/,
+      /librrd\.so/,
       /libstdc\+\+\.so/,
       /libutil\.so/,
       /linux-vdso.+/,
       /linux-gate\.so/,
+      /rrdtoolmodule\.so/,
     ].freeze
 
     ARCH_WHITELIST_LIBS = [
