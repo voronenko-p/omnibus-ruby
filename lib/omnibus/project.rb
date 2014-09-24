@@ -1060,7 +1060,6 @@ module Omnibus
     # @return [void]
     def validate
       name && install_dir && maintainer && homepage
-      end
     end
 
     #
