@@ -973,9 +973,8 @@ module Omnibus
       else
         case Ohai['platform_family']
         when 'rhel'
-          Ohai['platform_version'] =~ /^(\d+)/
-          maj = Regexp.last_match[1]
-          "#{build_iteration}.el#{maj}"
+           # fixme: remi
+          "#{build_iteration}"
         when 'freebsd'
           Ohai['platform_version'] =~ /^(\d+)/
           maj = Regexp.last_match[1]
