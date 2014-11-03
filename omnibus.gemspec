@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
 
   gem.files = `git ls-files`.split($/)
   gem.bindir = 'bin'
-  gem.executables = %w(omnibus)
+  gem.executables = %w(omnibus,rpm-sign)
   gem.test_files = gem.files.grep(/^(test|spec|features)\//)
   gem.require_paths = ['lib']
 
