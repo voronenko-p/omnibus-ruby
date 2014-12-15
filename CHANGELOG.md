@@ -47,7 +47,6 @@ v4.0.0 (December 15, 2014)
 - Added parallel downloads for fetcher objects.
 - Use `fakeroot` for building DEBs and RPMs.
 - Raspberry Pi platform support (Raspian, Pidora).
-- Retry uploads to Artifactory on publish failures.
 
 ### Potentially Breaking Changes
 - Remove embedded functional tests. Because the functional tests were skipped on CI (and require a system of each type to properly execute), they have been removed. Chef has created the [omnibus-harmony](https://github.com/opscode/omnibus-harmony) pipeline to perform true integration testing using the in-house CI cluster. If you were relying on the integration tests (or the associated Rake tasks), they have been removed.
