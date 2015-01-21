@@ -912,7 +912,7 @@ module Omnibus
 
         file_name = "#{dir_name}" + url.split("/")[-1]
 
-        url = (URLS.key? name_or_url) ? URLS[name_or_url] : name_or_url
+        url = (urls.key? name_or_url) ? urls[name_or_url] : name_or_url
         raise "License is not starting with http" unless url.start_with? "http"
 
 
@@ -920,6 +920,7 @@ module Omnibus
           f.write HTTParty.get(url).parsed_response
         end
     end
+    expose :license
 
     #
     # This is an internal wrapper around a command executed on the system. The
