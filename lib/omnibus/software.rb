@@ -1,4 +1,3 @@
-#
 # Copyright 2012 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,7 +96,12 @@ module Omnibus
     end
     expose :project
 
-    #
+
+    def license(name_or_url)
+      @license
+    end
+    expose :license
+
     # Retrieves the overriden version.
     #
     # @deprecated Use {#version} or test with {#overridden?} instead.
