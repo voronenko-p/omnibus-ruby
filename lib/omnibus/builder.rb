@@ -661,7 +661,7 @@ module Omnibus
 
          }
         url = (urls.key? name_or_url) ? urls[name_or_url] : name_or_url
-        raise "License is not starting with http" unless url.start_with? "http"
+        raise "License #{url} is not starting with http" unless url.start_with? "http"
         file_name = "#{dir_name}/" + url.split("/")[-1]
         File.open(file_name, "wb") do |f|
             log.info("Writing license file from #{url} to #{file_name}")
