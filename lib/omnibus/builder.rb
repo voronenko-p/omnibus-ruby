@@ -651,6 +651,7 @@ module Omnibus
         dir_name = "#{install_dir}/licenses/#{self.name}"
         FileUtils.mkdir_p(dir_name)
         urls = {
+            "LGPLv2" => "http://www.r-project.org/Licenses/LGPL-2",
             "LGPLv3" => "http://www.r-project.org/Licenses/LGPL-3",
             "PSFL" => "https://gist.githubusercontent.com/remh/1e6c62177a1a972fbc47/raw/01e9994ccf3a239a9045f31963006d2bba1cea42/PSF.license",
             "Apache" => "http://www.apache.org/licenses/LICENSE-1.0",
