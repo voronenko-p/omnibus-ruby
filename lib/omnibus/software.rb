@@ -97,7 +97,7 @@ module Omnibus
     expose :project
 
     def add_source(url)
-      @ladd_source
+      @add_source
     end
     expose :add_source
 
