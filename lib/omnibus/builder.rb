@@ -645,6 +645,19 @@ module Omnibus
       log.info(log_key) { 'Finished build' }
     end
 
+    def add_source(url)
+        build_commands << BuildCommand.new("Adding Source code: `#{url}'") do
+            dir_name = "#{install_dir}/sources/#{self.name}"
+            FileUtils.mkdir_p(dir_name)
+            raise "Source #{url} is not starting with http" unless url.start_with? "http"
+            file_name = "#{dir_name}/" + url.split("/")[-1]
+            File.open(file_name, "wb") do |f|
+            log.info("Writing source archive from #{url} to #{file_name}")
+            f.write HTTParty.get(url).parsed_response
+        end
+      end
+    end
+    expose :add_source
 
     def license(name_or_url)
       build_commands << BuildCommand.new("Adding License: `#{name_or_url}'") do

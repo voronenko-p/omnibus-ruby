@@ -96,6 +96,10 @@ module Omnibus
     end
     expose :project
 
+    def add_source(url)
+      @ladd_source
+    end
+    expose :add_source
 
     def license(name_or_url)
       @license
