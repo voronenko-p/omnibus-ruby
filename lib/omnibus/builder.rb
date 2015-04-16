@@ -15,6 +15,7 @@
 #
 
 require 'fileutils'
+require 'httparty'
 require 'mixlib/shellout'
 require 'ostruct'
 require 'pathname'
@@ -596,6 +597,46 @@ module Omnibus
 
       log.info(log_key) { 'Finished build' }
     end
+
+    def add_source(url)
+        build_commands << BuildCommand.new("Adding Source code: `#{url}'") do
+            dir_name = "#{install_dir}/sources/#{self.name}"
+            FileUtils.mkdir_p(dir_name)
+            raise "Source #{url} is not starting with http" unless url.start_with? "http"
+            file_name = "#{dir_name}/" + url.split("/")[-1]
+            File.open(file_name, "wb") do |f|
+            log.info("Writing source archive from #{url} to #{file_name}")
+            f.write HTTParty.get(url).parsed_response
+        end
+      end
+    end
+    expose :add_source
+
+    def license(name_or_url)
+      build_commands << BuildCommand.new("Adding License: `#{name_or_url}'") do
+        dir_name = "#{install_dir}/licenses/#{self.name}"
+        FileUtils.mkdir_p(dir_name)
+        urls = {
+            "LGPLv2" => "http://www.r-project.org/Licenses/LGPL-2",
+            "LGPLv3" => "http://www.r-project.org/Licenses/LGPL-3",
+            "PSFL" => "https://gist.githubusercontent.com/remh/1e6c62177a1a972fbc47/raw/01e9994ccf3a239a9045f31963006d2bba1cea42/PSF.license",
+            "Apache" => "http://www.apache.org/licenses/LICENSE-1.0",
+            "Apachev2" => "http://www.apache.org/licenses/LICENSE-2.0.txt",
+            "GPLv2" => "http://www.r-project.org/Licenses/GPL-2",
+            "GPLv3" => "http://www.r-project.org/Licenses/GPL-3",
+            "ZPL" => "https://gist.githubusercontent.com/remh/d60434c9fee49af69850/raw/5582f08b89995ee25bb0a556e32ca8a9de197f23/ZPL.license",
+
+         }
+        url = (urls.key? name_or_url) ? urls[name_or_url] : name_or_url
+        raise "License #{url} is not starting with http" unless url.start_with? "http"
+        file_name = "#{dir_name}/" + url.split("/")[-1]
+        File.open(file_name, "wb") do |f|
+            log.info("Writing license file from #{url} to #{file_name}")
+            f.write HTTParty.get(url).parsed_response
+        end
+      end
+    end
+    expose :license
 
     #
     # The shasum for this builder object. The shasum is calculated using the

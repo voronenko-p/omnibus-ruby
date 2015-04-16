@@ -118,6 +118,16 @@ module Omnibus
     end
     expose :project
 
+    def add_source(url)
+      @add_source
+    end
+    expose :add_source
+
+    def license(name_or_url)
+      @license
+    end
+    expose :license
+
     #
     # **[Required]** Sets or retreives the name of the software.
     #

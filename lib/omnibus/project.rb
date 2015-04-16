@@ -252,6 +252,24 @@ module Omnibus
     end
     expose :homepage
 
+    def vendor(val = NULL)
+      if null?(val)
+        @vendor
+      else
+        @vendor = val
+      end
+    end
+    expose :vendor
+
+    def epoch(val = NULL)
+      if null?(val)
+        @epoch
+      else
+        @epoch = val
+      end
+    end
+    expose :epoch
+
     #
     # Set or retrieve the project description.
     #
