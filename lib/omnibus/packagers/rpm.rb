@@ -63,8 +63,12 @@ module Omnibus
         parent      = File.dirname(file)
         destination = File.join("#{staging_dir}/BUILD", parent)
 
-        create_directory(destination)
-        copy_file(file, destination)
+        if File.directory?(file)
+          FileSyncer.sync(file, destination)
+        else
+          create_directory(destination)
+          copy_file(file, destination)
+        end
       end
     end
 

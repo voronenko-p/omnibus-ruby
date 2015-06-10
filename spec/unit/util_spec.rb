@@ -100,10 +100,10 @@ module Omnibus
     end
 
     describe '#copy_file' do
-      before { allow(FileUtils).to receive(:cp) }
+      before { allow(FileUtils).to receive(:cp_r) }
 
       it 'copies the file' do
-        expect(FileUtils).to receive(:cp).with('foo', 'bar')
+        expect(FileUtils).to receive(:cp_r).with('foo', 'bar')
         subject.copy_file('foo', 'bar')
       end
 
