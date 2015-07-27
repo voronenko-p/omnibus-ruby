@@ -630,10 +630,10 @@ module Omnibus
 
     #
     # Downloads a software license to ship with the final build.
-    # 
+    #
     # Licenses will be copied into {install_dir}/sources/{software_name}
     #
-    # @param [String] name_or_url 
+    # @param [String] name_or_url
     #   the name of the license to ship or a URL pointing to the license file.
     #
     #   Available License Names : LGPLv2, LGPLv3, PSFL, Apache, Apachev2,
@@ -642,8 +642,8 @@ module Omnibus
     # @example
     #   ship_license 'GPLv3'
     #
-    # @example 
-    #    ship_license 'http://www.r-project.org/Licenses/GPL-3' 
+    # @example
+    #    ship_license 'http://www.r-project.org/Licenses/GPL-3'
     #
     def ship_license(name_or_url)
       build_commands << BuildCommand.new("Adding License: '#{name_or_url}'") do
@@ -658,6 +658,7 @@ module Omnibus
           "GPLv2" => "http://www.r-project.org/Licenses/GPL-2",
           "GPLv3" => "http://www.r-project.org/Licenses/GPL-3",
           "ZPL" => "https://gist.githubusercontent.com/remh/d60434c9fee49af69850/raw/5582f08b89995ee25bb0a556e32ca8a9de197f23/ZPL.license",
+          "MIT" => "https://www.r-project.org/Licenses/MIT",
         }
         url = (urls.key? name_or_url) ? urls[name_or_url] : name_or_url
         raise "License #{url} is not starting with http" unless url.start_with? "http"
@@ -677,7 +678,7 @@ module Omnibus
     #
     # @param [String] url
     #   An URL pointing to a source code archive
-    #   
+    #
     def ship_source(url)
       build_commands << BuildCommand.new("Adding Source code: `#{url}'") do
         dir_name = "#{install_dir}/sources/#{self.name}"
