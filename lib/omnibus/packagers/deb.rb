@@ -175,7 +175,7 @@ module Omnibus
     # extension.
     #
     def package_name
-      return "#{safe_base_package_name}_#{safe_version}-#{safe_build_iteration}_#{safe_architecture}.deb"
+      return "#{safe_base_package_name}_#{safe_version}-#{safe_build_iteration}_#{safe_architecture}.deb".sub(/\d+:/, '')
     end
 
     #
