@@ -210,11 +210,7 @@ module Omnibus
     # @return [String]
     #
     def package_name
-      if defined?(@epoch)
-        return "#{@epoch}:#{safe_base_package_name}-#{safe_version}-#{safe_build_iteration}.#{safe_architecture}.rpm"
-      else
-        return "#{safe_base_package_name}-#{safe_version}-#{safe_build_iteration}.#{safe_architecture}.rpm"
-      end
+      return "#{safe_base_package_name}-#{safe_version}-#{safe_build_iteration}.#{safe_architecture}.rpm"
     end
 
     #
@@ -459,15 +455,15 @@ module Omnibus
         version = converted
       end
 
-      if version =~ /\A[a-zA-Z0-9\.\+\~]+\z/
+      if version =~ /\A[a-zA-Z0-9\.\+\:\~]+\z/
         version
       else
-        converted = version.gsub(/[^a-zA-Z0-9\.\+\~]+/, '_')
+        converted = version.gsub(/[^a-zA-Z0-9\.\+\:\~]+/, '_')
 
         log.warn(log_key) do
           "The `version' component of RPM package names can only include " \
           "alphabetical characters (a-z, A-Z), numbers (0-9), dots (.), " \
-          "plus signs (+), tildes (~) and underscores (_). Converting " \
+          "plus signs (+), tildes (~) and colons (:). Converting " \
           "`#{project.build_version}' to `#{converted}'."
         end
 
