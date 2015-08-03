@@ -216,7 +216,7 @@ module Omnibus
     # @return [String]
     #
     def package_name
-      return "#{safe_base_package_name}-#{safe_version}-#{safe_build_iteration}.#{safe_architecture}.rpm"
+      return "#{safe_base_package_name}-#{safe_version}-#{safe_build_iteration}.#{safe_architecture}.rpm".sub(/\d+:/, '')
     end
 
     #
@@ -336,7 +336,7 @@ module Omnibus
       end
 
       FileSyncer.glob("#{staging_dir}/RPMS/**/*.rpm").each do |rpm|
-        copy_file(rpm, Config.package_dir)
+        copy_file(rpm, "#{Config.package_dir}/#{rpm.split('/')[-1].sub(/\d+:/, '')}" )
       end
     end
 
