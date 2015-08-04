@@ -136,7 +136,9 @@ module Omnibus
       if ENV['AGENT_VERSION'] and ENV['AGENT_VERSION'].length > 1 and agent_version.include? "git"
         agent_version = ENV['AGENT_VERSION'] + "+" + agent_version.split("+")[1]
       end
-      agent_version = "1:" + agent_version
+      if ohai['platform_family'] == 'debian'
+        agent_version = "1:" + agent_version
+      end
       agent_version
     end
 
