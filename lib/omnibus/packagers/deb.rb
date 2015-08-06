@@ -181,7 +181,7 @@ module Omnibus
     # extension.
     #
     def package_name
-      return "#{safe_base_package_name}_#{safe_version}-#{safe_build_iteration}_#{safe_architecture}.deb".sub(/\d+:/, '')
+      return "#{safe_base_package_name}_#{safe_version}-#{safe_build_iteration}_#{safe_architecture}.deb"
     end
 
     #
@@ -207,7 +207,7 @@ module Omnibus
         destination: File.join(debian_dir, 'control'),
         variables: {
           name:           safe_base_package_name,
-          version:        safe_version,
+          version:        "1:" + safe_version,
           iteration:      safe_build_iteration,
           vendor:         vendor,
           license:        license,
