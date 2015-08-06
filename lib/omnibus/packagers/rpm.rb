@@ -336,7 +336,7 @@ module Omnibus
       end
 
       FileSyncer.glob("#{staging_dir}/RPMS/**/*.rpm").each do |rpm|
-        copy_file(rpm, Config.package_dir)
+        copy_file(rpm, "#{Config.package_dir}/#{rpm.split('/')[-1]}" )
       end
     end
 
