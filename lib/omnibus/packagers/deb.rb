@@ -123,6 +123,29 @@ module Omnibus
     expose :license
 
     #
+    # Sets or return the epoch for this package
+    #
+    # @example
+    #   epoch 1
+    # @param [Integer] val
+    #   the epoch number
+    #
+    # @return [Integer]
+    #   the epoch of the current package
+    def epoch(val = NULL)
+      if null?(val)
+        @epoch || NULL
+      else
+        unless val.is_a?(Integer)
+          raise InvalidValue.new(:epoch, 'be an Integer')
+        end
+
+        @epoch = val
+      end
+    end
+    expose :epoch
+
+    #
     # Set or return the priority for this package.
     #
     # @example
@@ -207,7 +230,7 @@ module Omnibus
         destination: File.join(debian_dir, 'control'),
         variables: {
           name:           safe_base_package_name,
-          version:        "1:" + safe_version,
+          version:        (if null?(epoch) then '' else "#{epoch}:" end) + safe_version,
           iteration:      safe_build_iteration,
           vendor:         vendor,
           license:        license,

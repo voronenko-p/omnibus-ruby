@@ -134,6 +134,29 @@ module Omnibus
     expose :vendor
 
     #
+    # Sets or return the epoch for this package
+    #
+    # @example
+    #   epoch 1
+    # @param [Integer] val
+    #   the epoch number
+    #
+    # @return [Integer]
+    #   the epoch of the current package
+    def epoch(val = NULL)
+      if null?(val)
+        @epoch || NULL
+      else
+        unless val.is_a?(Integer)
+          raise InvalidValue.new(:epoch, 'be an Integer')
+        end
+
+        @epoch = val
+      end
+    end
+    expose :epoch
+
+    #
     # Set or return the license for this package.
     #
     # @example
@@ -167,6 +190,7 @@ module Omnibus
     # @param [String] val
     #   the priority for this package
     #
+
     # @return [String]
     #   the priority for this package
     #
@@ -267,6 +291,7 @@ module Omnibus
         variables: {
           name:           safe_base_package_name,
           version:        safe_version,
+          epoch:          epoch,
           iteration:      safe_build_iteration,
           vendor:         vendor,
           license:        license,
@@ -336,7 +361,9 @@ module Omnibus
       end
 
       FileSyncer.glob("#{staging_dir}/RPMS/**/*.rpm").each do |rpm|
-        copy_file(rpm, "#{Config.package_dir}/#{rpm.split('/')[-1]}" )
+        # RPMbuild doesn't let use choose the final RPM name, it contains the epoch if the
+        # corresponding DSL was set so... let's get rid from the RPM name here :/
+        copy_file(rpm, "#{Config.package_dir}/#{rpm.split('/')[-1].sub(/\d+:/, '')}" )
       end
     end
 
