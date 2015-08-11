@@ -17,7 +17,9 @@
 # Metadata
 Name: <%= name %>
 Version: <%= version %>
+<% if not epoch.empty? -%>
 Epoch: <%= epoch %>
+<% end -%>
 Release: <%= iteration %>
 Summary:  <%= description.split("\n").first.empty? ? "_" : description.split("\n").first %>
 BuildArch: <%= architecture %>

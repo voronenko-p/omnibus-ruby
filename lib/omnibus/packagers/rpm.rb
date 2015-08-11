@@ -145,13 +145,13 @@ module Omnibus
     #   the epoch of the current package
     def epoch(val = NULL)
       if null?(val)
-        @epoch || NULL
+        @epoch || ''
       else
         unless val.is_a?(Integer)
           raise InvalidValue.new(:epoch, 'be an Integer')
         end
 
-        @epoch = val
+        @epoch = val.to_s
       end
     end
     expose :epoch
