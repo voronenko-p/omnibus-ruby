@@ -38,6 +38,14 @@ module Omnibus
       /linux-vdso.+/,
       /linux-gate\.so/,
       /rrdtoolmodule\.so/,
+      /libquadmath\.so/,
+      /libatlas\.so/,
+      /libcblas\.so/,
+      /libblas\.so/,
+      /libf77blas\.so/,
+      /liblapack\.so/,
+      /libgfortran\.so/,
+      /libffi\.so/
     ].freeze
 
     ARCH_WHITELIST_LIBS = [
