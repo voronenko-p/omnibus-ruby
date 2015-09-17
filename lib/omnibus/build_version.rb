@@ -127,7 +127,7 @@ module Omnibus
     def s3_compliant_semver
       pkg_version = semver
       if pkg_version.include? '+'
-        pkg_version = pkg_version.split('+')[1] + '.' + pkg_version.split('+')[1]
+        pkg_version = pkg_version.split('+')[0] + '.' + pkg_version.split('+')[1]
       end
       pkg_version
     end
