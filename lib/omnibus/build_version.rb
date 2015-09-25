@@ -145,7 +145,7 @@ module Omnibus
     # @return [String]
     def git_describe
       @git_describe ||= begin
-        cmd = shellout('git describe --tags', cwd: @path)
+        cmd = shellout('git describe --tags `git rev-list --tags --max-count=1`', cwd: @path)
 
         if cmd.exitstatus == 0
           cmd.stdout.chomp
