@@ -239,7 +239,7 @@ module Omnibus
     # @return [String]
     #
     def package_name
-      "#{safe_base_package_name}-#{safe_version}-#{safe_build_iteration}#{dist_tag}.#{safe_architecture}.rpm"
+      "#{safe_base_package_name}-#{safe_version}-#{safe_build_iteration}.#{safe_architecture}.rpm"
     end
 
     #
