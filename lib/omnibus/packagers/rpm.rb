@@ -317,7 +317,6 @@ module Omnibus
           iteration:       safe_build_iteration,
           vendor:          vendor,
           license:         license,
-          dist_tag:        dist_tag,
           maintainer:      project.maintainer,
           homepage:        project.homepage,
           description:     project.description,
