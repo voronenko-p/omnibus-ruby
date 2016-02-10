@@ -101,7 +101,7 @@ module Omnibus
             FileUtils.ln_sf(target, "#{destination}/#{relative_path}")
           end
         when :file
-          FileUtils.cp(source_file, "#{destination}/#{relative_path}", preserve: true)
+          FileUtils.cp(source_file, "#{destination}/#{relative_path}")
         else
           raise RuntimeError,
             "Unknown file type: `File.ftype(source_file)' at `#{source_file}'!"
