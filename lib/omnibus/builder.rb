@@ -142,8 +142,6 @@ module Omnibus
     #   the level to apply the patch
     # @option options [String] :target
     #   the destination to apply the patch
-    # @option options [Boolean] :forward
-    #   move forward if reversed patch detected
     #
     # @return (see #command)
     #
@@ -151,7 +149,6 @@ module Omnibus
       source = options.delete(:source)
       plevel = options.delete(:plevel) || 1
       target = options.delete(:target)
-      forward = options.delete(:forward) || false
 
       locations, patch_path = find_file('config/patches', source)
 
@@ -162,16 +159,10 @@ module Omnibus
       # Apply patches nicely on Windows
       patch_path = windows_safe_path(patch_path)
 
-      if forward
-        patch_cmd = "patch -N"
-      else
-        patch_cmd = "patch"
-      end
-
       if target
-        command = "cat #{patch_path} | #{patch_cmd} -p#{plevel} #{target}"
+        command = "cat #{patch_path} | patch -p#{plevel} #{target}"
       else
-        command = "#{patch_cmd} -d #{software.project_dir} -p#{plevel} -i #{patch_path}"
+        command = "patch -d #{software.project_dir} -p#{plevel} -i #{patch_path}"
       end
 
       patches << patch_path
@@ -747,6 +738,9 @@ module Omnibus
     # @see (Util#shellout!)
     #
     def shellout!(command_string, options = {})
+      # check command for acceptable output before raising - even if command fails
+      acceptable_output = options.delete(:acceptable_output) || false
+
       # Make sure the PWD is set to the correct directory
       options = { cwd: software.project_dir }.merge(options)
 
@@ -757,7 +751,17 @@ module Omnibus
       options[:live_stream] ||= log.live_stream(:debug)
 
       # Use Util's shellout
-      super(command_string, options)
+      if not acceptable_output
+        super(command_string, options)
+      else
+        cmd = shellout(command_string, options)
+        if cmd.stdout.include? acceptable_output or cmd.stderr.include? acceptable_output
+          cmd
+        else
+          cmd.error!
+          cmd
+        end
+      end
     end
 
     #
