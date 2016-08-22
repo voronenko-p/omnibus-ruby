@@ -626,7 +626,7 @@ module Omnibus
     # This means that the project will rely on the extended packages to be
     # installed to behave as expected.
     # Extending a project is similar to running `apt-get install packages` before the
-    # project build, and `apt-get purge packages` before the packaging
+    # project build, and `apt-get remove packages` before the packaging
     #
 
     # @example
