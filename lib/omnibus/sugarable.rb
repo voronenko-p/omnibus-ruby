@@ -14,19 +14,15 @@
 # limitations under the License.
 #
 
-require 'chef/sugar/architecture'
-require 'chef/sugar/cloud'
-# NOTE: We cannot include the constraints library because of the conflicting
-# +version+ attribute would screw things up. You can still use the
-# +Chef::Sugar::Constraint.version('1.2.3') for comparing versions.
-#
-# require 'chef/sugar/constraints'
-require 'chef/sugar/ip'
-require 'chef/sugar/platform'
-require 'chef/sugar/platform_family'
-require 'chef/sugar/ruby'
-require 'chef/sugar/shell'
-require 'chef/sugar/vagrant'
+require "chef/sugar/architecture"
+require "chef/sugar/cloud"
+require "chef/sugar/constraints"
+require "chef/sugar/ip"
+require "chef/sugar/platform"
+require "chef/sugar/platform_family"
+require "chef/sugar/ruby"
+require "chef/sugar/shell"
+require "chef/sugar/vagrant"
 
 module Omnibus
   module Sugarable
@@ -46,7 +42,7 @@ module Omnibus
         end
 
         # Make all the common "sugars" available in the cleanroom (DSL)
-         Omnibus::Sugar.instance_methods.each do |instance_method|
+        Omnibus::Sugar.instance_methods.each do |instance_method|
           base.send(:expose, instance_method)
         end
       end
