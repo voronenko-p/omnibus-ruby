@@ -88,7 +88,17 @@ module Omnibus
       if File.directory?("#{Config.source_dir}\\extra_package_files")
         # Let's collect the DirectoryRefs
         Dir.foreach("#{Config.source_dir}\\extra_package_files") do |item|
+          puts "checking #{item} ...."
           next if item == '.' or item == '..'
+          if File.file?("#{Config.source_dir}\\extra_package_files\\#{item}") 
+            puts "item #{item} is file"
+            next
+          end
+          if File.directory?("#{Config.source_dir}\\extra_package_files\\#{item}") 
+            puts "item #{item} is directory"
+          end
+
+          puts "adding #{item} to heat list"
           dir_refs.push(item)
         end
       end

@@ -513,7 +513,7 @@ module Omnibus
     def mkdir(directory, options = {})
       build_commands << BuildCommand.new("mkdir `#{directory}'") do
         Dir.chdir(software.project_dir) do
-          FileUtils.mkdir_p(directory, options)
+          FileUtils.mkdir_p(directory, options) unless File.directory?(directory)
         end
       end
     end
