@@ -626,7 +626,7 @@ module Omnibus
     # @return [void]
     #
     def install(packages, enablerepo = NULL)
-      if ohai["platform_family"] == 'suse'
+      if Ohai["platform_family"] == 'suse'
         log.info('enablerepo only works on yum based systems, not on zypper based ones')
         shellout!('zypper clean')
         shellout!("zypper install -y #{packages}")
