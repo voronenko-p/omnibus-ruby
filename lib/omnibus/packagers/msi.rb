@@ -126,7 +126,7 @@ module Omnibus
         # Create the msi, ignoring the 204 return code from light.exe since it is
         # about some expected warnings
         msi_file = windows_safe_path(Config.package_dir, msi_name)
-        shellout!(light_command(msi_file, wixobj_list: wixobj_list), returns: [0, 204])
+        shellout!(light_command(msi_file, wixobj_list: wixobj_list), returns: [0])
 
         if signing_identity
           sign_package(msi_file)
