@@ -172,6 +172,7 @@ module Omnibus
       if Config.use_s3_caching && Config.s3_authenticated_download
         get_from_s3
       else
+        log.info(log_key) { "Downloading file from `#{download_url}'" }
         download_file!(download_url, downloaded_file, options)
       end
     end
@@ -180,6 +181,7 @@ module Omnibus
     # Download the file directly from s3 using get_object
     #
     def get_from_s3
+      log.info(log_key) { "Getting object `#{S3Cache.key_for(self)}' from S3 bucket: `#{Config.s3_bucket}'" }
       begin
         S3Cache.get_object(downloaded_file, self)
       rescue Aws::S3::Errors::NoSuchKey => e
