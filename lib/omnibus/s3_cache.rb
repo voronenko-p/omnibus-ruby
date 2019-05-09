@@ -105,11 +105,21 @@ module Omnibus
 
       def get_object(filename, software)
         object = client.bucket(Config.s3_bucket).object(S3Cache.key_for(software))
-        object.get(
+        resp = object.get(
           response_target: filename,
           bucket: Config.s3_bucket,
           key: key_for(software)
         )
+
+        log.info(log_key) do
+          "S3 get object reponse's content_length `#{resp.content_length}'"
+        end
+
+        if resp.content_length == 0
+          log.info(log_key) { "S3 get object response's metadata `#{resp.metadata}'" }
+        end
+
+        resp
       end
 
       #
