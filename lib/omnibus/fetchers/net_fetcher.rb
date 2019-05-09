@@ -308,7 +308,7 @@ module Omnibus
     #   if the checksum does not match
     #
     def verify_checksum!
-      log.info(log_key) { "Verifying checksum" }
+      log.info(log_key) { "Verifying checksum of `#{downloaded_file}'" }
 
       expected = checksum
       actual   = digest(downloaded_file, digest_type)
