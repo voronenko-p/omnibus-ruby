@@ -314,6 +314,16 @@ module Omnibus
       actual   = digest(downloaded_file, digest_type)
 
       if expected != actual
+        # HACK
+        if self.name == 'pip2'
+          file = File.open(downloaded_file)
+          log.info(log_key) { "File size `#{file.size}' bytes" }
+          if file.size < 1000000
+            contents = file.read()
+            log.info(log_key) { "File contents: `#{contents}'" }
+          end
+        end
+
         raise ChecksumMismatch.new(self, expected, actual)
       end
     end
