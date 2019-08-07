@@ -234,7 +234,7 @@ module Omnibus
           arr << "\"#{package_file}\""
         end.join(" ")
       end
-      puts cmd
+
       status = shellout(cmd)
       if status.exitstatus != 0
         log.warn(log_key) do
