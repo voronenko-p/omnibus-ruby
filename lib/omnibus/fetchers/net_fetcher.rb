@@ -116,8 +116,27 @@ module Omnibus
     # @return [String]
     #
     def downloaded_file
-      filename = File.basename(source[:url], "?*")
-      File.join(Config.cache_dir, filename)
+      basename = File.basename(source[:url], "?*")
+      File.join(Config.cache_dir, "#{self.name}-#{basename}")
+    end
+
+    #
+    # The target filename to copy the downloaded file as.
+    # Defaults to {#downloaded_file} unless overriden on the source.
+    #
+    # @return [String]
+    #
+    def target_filename
+      source[:target_filename] || downloaded_file
+    end
+
+    #
+    # Tells if the sources should be shipped
+    #
+    # @return [Boolean]
+    #
+    def ship_source?
+      source[:ship_source]
     end
 
     #
@@ -172,6 +191,7 @@ module Omnibus
       if Config.use_s3_caching && Config.s3_authenticated_download
         get_from_s3
       else
+        log.info(log_key) { "Fetching file from `#{download_url}'" }
         download_file!(download_url, downloaded_file, options)
       end
     end
@@ -180,6 +200,7 @@ module Omnibus
     # Download the file directly from s3 using get_object
     #
     def get_from_s3
+      log.info(log_key) { "Fetching file from S3 object `#{S3Cache.key_for(self)}' in bucket `#{Config.s3_bucket}'" }
       begin
         S3Cache.get_object(downloaded_file, self)
       rescue Aws::S3::Errors::NoSuchKey => e
@@ -210,7 +231,17 @@ module Omnibus
           # In the more likely case that we got a "regular" file, we want that
           # file to live **inside** the project directory. project_dir should already
           # exist due to create_required_directories
-          FileUtils.cp(downloaded_file, project_dir)
+          log.info(log_key) { "`#{safe_downloaded_file}' is a regular file - naming copy `#{target_filename}'" }
+          FileUtils.cp(downloaded_file, File.join(project_dir, target_filename))
+        end
+      end
+      if ship_source?
+        FileUtils.mkdir_p("#{sources_dir}/#{name}")
+        log.info(log_key) { "Moving the sources #{sources_dir}/#{name}/#{downloaded_file.split("/")[-1]}" }
+        if File.directory?(downloaded_file)
+          FileUtils.cp_r("#{downloaded_file}/.", "#{sources_dir}/#{name}")
+        else
+          FileUtils.cp(downloaded_file, "#{sources_dir}/#{name}")
         end
       end
     end
@@ -306,7 +337,7 @@ module Omnibus
     #   if the checksum does not match
     #
     def verify_checksum!
-      log.info(log_key) { "Verifying checksum" }
+      log.info(log_key) { "Verifying checksum of `#{downloaded_file}'" }
 
       expected = checksum
       actual   = digest(downloaded_file, digest_type)

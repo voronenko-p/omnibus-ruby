@@ -184,6 +184,15 @@ module Omnibus
     end
     expose :install_dir
 
+    def sources_dir(val = NULL)
+      if null?(val)
+        @sources_dir || File.expand_path("#{files_path}/sources")
+      else
+        @sources_dir = val.tr('\\', "/").squeeze("/").chomp("/")
+      end
+    end
+    expose :sources_dir
+
     def python_2_embedded(val = NULL)
       if null?(val)
         @python_2_embedded || "#{install_dir}/embedded2"
@@ -622,6 +631,49 @@ module Omnibus
     expose :dependency
 
     #
+    # Add a debug package path.
+    #
+    # Paths added here will be excluded from the main package and added to
+    # the debug variant instead.
+    #
+    # @example
+    #   debug_path 'foo/bar'
+    #   dependency 'quz'
+    #
+    # @param [String] val
+    #   the path to include in the debug build
+    #
+    # @return [Array<String>]
+    #   the list of dependencies
+    #
+    def debug_path(pattern)
+      debug_package_paths << pattern
+      debug_package_paths.dup
+    end
+    expose :debug_path
+
+    #
+    # Add a strip exclude path.
+    #
+    # Paths added here will be excluded from the stripping process.
+    #
+    # @example
+    #   strip_exclude 'foo/bar'
+    #   dependency 'quz'
+    #
+    # @param [String] val
+    #   the path to exclude from stripping
+    #
+    # @return [Array<String>]
+    #   the list of dependencies
+    #
+    def strip_exclude(pattern)
+      strip_exclude_paths << pattern
+      strip_exclude_paths.dup
+    end
+    expose :strip_exclude
+
+    #
     # Add a package that is a runtime dependency of this project.
     #
     # This is distinct from a build-time dependency, which should correspond to
@@ -806,6 +858,23 @@ module Omnibus
     expose :license_file_path
 
     #
+    # Method to enable whether or not a build should be stripped.
+    #
+    # @example
+    #   strip_build = true
+    #
+    # @return [String]
+    #
+    def strip_build(val = NULL)
+      if null?(val)
+        @strip_build || false
+      else
+        @strip_build = val
+      end
+    end
+    expose :strip_build
+
+    #
     # Location of json-formated version manifest, written at at the
     # end of the build. If no path is specified
     # +install_dir+/version-manifest.json is used.
@@ -870,6 +939,25 @@ module Omnibus
     end
 
     #
+    # Add all sources that have to be shipped to the project's
+    # {install_dir}/sources.
+    #
+    # @return [true]
+    #
+    def install_sources
+      log.info(log_key) { "Searching for sources to ship with the package." }
+      if Dir.exist?(sources_dir)
+        log.info(log_key) { "Sources found in #{sources_dir}. Moving them to #{install_dir}/sources." }
+        FileUtils.mkdir_p("#{install_dir}/sources")
+        FileUtils.cp_r("#{sources_dir}/.", "#{install_dir}/sources")
+      else
+        log.info(log_key) { "No sources found." }
+      end
+
+      true
+    end
+
+    #
     # The list of software dependencies for this project. These is the software
     # that comprises your project, and is distinct from runtime dependencies.
     #
@@ -881,6 +969,32 @@ module Omnibus
     #
     def dependencies
       @dependencies ||= []
+    end
+
+    # The list of paths to include in the debug package.
+    # Paths here specified will be excluded from the main build.
+    #
+    # @see #debug_path
+    #
+    # @param [Array<String>]
+    #
+    # @return [Array<String>]
+    #
+    def debug_package_paths
+      @debug_package_paths ||= []
+    end
+
+    # The list of paths to exclude in the stripping process.
+    # Paths here specified will be excluded when stripping.
+    #
+    # @see #strip_exclude
+    #
+    # @param [Array<String>]
+    #
+    # @return [Array<String>]
+    #
+    def strip_exclude_paths
+      @strip_exclude_paths ||= []
     end
 
     #
@@ -1138,9 +1252,14 @@ module Omnibus
         end
       end
 
+      # Install shipped sources in the sources/ folder
+      install_sources
+
       write_json_manifest
       write_text_manifest
       HealthCheck.run!(self)
+
+      Stripper.run!(self) if strip_build
 
       # Remove any package this project extends, after the health check ran
       extended_packages.each do |packages, _|

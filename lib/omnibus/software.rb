@@ -243,6 +243,49 @@ module Omnibus
     expose :dependency
 
     #
+    # Add a debug package path.
+    #
+    # Paths added here will be excluded from the main package and added to
+    # the debug variant instead.
+    #
+    # @example
+    #   debug_path 'foo/bar'
+    #   dependency 'quz'
+    #
+    # @param [String] val
+    #   the path to include in the debug build
+    #
+    # @return [Array<String>]
+    #   the list of dependencies
+    #
+    def debug_path(pattern)
+      debug_package_paths << pattern
+      debug_package_paths.dup
+    end
+    expose :debug_path
+
+    #
+    # Add a strip exclude path.
+    #
+    # Paths added here will be excluded from the stripping process.
+    #
+    # @example
+    #   strip_exclude 'foo/bar'
+    #   dependency 'quz'
+    #
+    # @param [String] val
+    #   the path to exclude from stripping
+    #
+    # @return [Array<String>]
+    #   the list of dependencies
+    #
+    def strip_exclude(pattern)
+      strip_exclude_paths << pattern
+      strip_exclude_paths.dup
+    end
+    expose :strip_exclude
+
+    #
     # Set or retrieve the source for the software.
     #
     # @raise [InvalidValue]
@@ -285,6 +328,10 @@ module Omnibus
     #   a warning message to print when downloading
     # @option val [Symbol] :extract (nil)
     #   either :tar, :lax_tar :seven_zip
+    # @option val [String] :target_filename (nil)
+    #   when the source is a single (non-extractable) file, the file will be present under this name
+    #   in the project_dir.
+    #   Defaults to "#{software.name}-#{URLBasename}"
     #
     # Only used in path_fetcher:
     #
@@ -314,7 +361,7 @@ module Omnibus
         extra_keys = val.keys - [
           :git, :path, :url, # fetcher types
           :md5, :sha1, :sha256, :sha512, # hash type - common to all fetchers
-          :cookie, :warning, :unsafe, :extract, # used by net_fetcher
+          :cookie, :warning, :unsafe, :extract, :target_filename, # used by net_fetcher
           :options, # used by path_fetcher
           :submodules, :always_fetch_tags # used by git_fetcher
         ]
@@ -327,6 +374,10 @@ module Omnibus
         unless duplicate_keys.size < 2
           raise InvalidValue.new(:source,
             "not include duplicate keys. Duplicate keys: #{duplicate_keys.inspect}")
+        end
+
+        if ship_source
+          val[:ship_source] = true
         end
 
         @source ||= {}
@@ -573,6 +624,11 @@ module Omnibus
       @project.install_dir
     end
     expose :install_dir
+
+    def sources_dir
+      @project.sources_dir
+    end
+    expose :sources_dir
 
     def python_2_embedded
       @project.python_2_embedded
@@ -834,10 +890,10 @@ module Omnibus
 
     #
     # Downloads a software license to ship with the final build.
-    # 
+    #
     # Licenses will be copied into {install_dir}/sources/{software_name}
     #
-    # @param [String] name_or_url 
+    # @param [String] name_or_url
     #   the name of the license to ship or a URL pointing to the license file.
     #
     #   Available License Names : LGPLv2, LGPLv3, PSFL, Apache, Apachev2,
@@ -846,8 +902,8 @@ module Omnibus
     # @example
     #   ship_license 'GPLv3'
     #
-    # @example 
-    #    ship_license 'http://www.r-project.org/Licenses/GPL-3' 
+    # @example
+    #    ship_license 'http://www.r-project.org/Licenses/GPL-3'
     #
     def ship_license(name_or_url)
       @ship_license
@@ -855,15 +911,27 @@ module Omnibus
     expose :ship_license
 
     #
-    # Downloads a software source code to ship with the final build
+    # Tells if the sources should be shipped alongside the built
+    # software.
     #
-    # Sources will be copied into {install_dir}/sources/{software_name}
+    # If set to true, the sources will be put in {sources_dir}/{software_name}
+    # by the fetcher, and will be copied to {install_dir}/sources/{software_name}
+    # by the Project which created this Software.
     #
-    # @param [String] url
-    #   An URL pointing to a source code archive
-    #   
-    def ship_source(url)
-        @ship_source
+    # @example
+    #   ship_source true
+    #
+    # @param [Boolean] val
+    #   the new value of ship_source.
+    #
+    # @return [Boolean]
+    #
+    def ship_source(val = NULL)
+      if null?(val)
+        @ship_source || false
+      else
+        @ship_source = val
+      end
     end
     expose :ship_source
 
@@ -939,6 +1007,32 @@ module Omnibus
     #
     def dependencies
       @dependencies ||= []
+    end
+
+    # The list of paths to include in the debug package.
+    # Paths here specified will be excluded from the main build.
+    #
+    # @see #debug_path
+    #
+    # @param [Array<String>]
+    #
+    # @return [Array<String>]
+    #
+    def debug_package_paths
+      @debug_package_paths ||= []
+    end
+
+    # The list of paths to exclude in the stripping process.
+    # Paths here specified will be excluded when stripping.
+    #
+    # @see #strip_exclude
+    #
+    # @param [Array<String>]
+    #
+    # @return [Array<String>]
+    #
+    def strip_exclude_paths
+      @strip_exclude_paths ||= []
     end
 
     #
@@ -1061,9 +1155,9 @@ module Omnibus
     def fetcher
       @fetcher ||=
         if source_type == :url && File.basename(source[:url], "?*").end_with?(*NetFetcher::ALL_EXTENSIONS)
-          Fetcher.fetcher_class_for_source(self.source).new(manifest_entry, fetch_dir, build_dir)
+          Fetcher.fetcher_class_for_source(self.source).new(manifest_entry, fetch_dir, build_dir, sources_dir)
         else
-          Fetcher.fetcher_class_for_source(self.source).new(manifest_entry, project_dir, build_dir)
+          Fetcher.fetcher_class_for_source(self.source).new(manifest_entry, project_dir, build_dir, sources_dir)
         end
     end
 
