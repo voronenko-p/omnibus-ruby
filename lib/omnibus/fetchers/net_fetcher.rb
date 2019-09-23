@@ -191,8 +191,13 @@ module Omnibus
       if Config.use_s3_caching && Config.s3_authenticated_download
         get_from_s3
       else
+        puts "Fetching file from `#{download_url}'"
+        puts "= = = = = = = = = = = = = = = = = = = = = =  = "
+        STDOUT.flush
         log.info(log_key) { "Fetching file from `#{download_url}'" }
         download_file!(download_url, downloaded_file, options)
+        puts "Done Fetching file from `#{download_url}'"
+        puts "= = = = = = = = = = = = = = = = = = = = = =  = "
       end
     end
 
