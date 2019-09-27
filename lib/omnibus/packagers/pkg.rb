@@ -29,6 +29,16 @@ module Omnibus
     id :pkg
 
     setup do
+      # let's use a staging dirs for cleanup, etc
+      skip = exclusions + debug_package_paths
+      destination = File.join(staging_dir, project.install_dir)
+      FileSyncer.sync(project.install_dir, destination, exclude: skip)
+
+      if debug_build?
+        destination_dbg = File.join(staging_dbg_dir, project.install_dir)
+        FileSyncer.sync(project.install_dir, destination_dbg, include: debug_package_paths)
+      end
+
       # Create the resources directory
       create_directory(resources_dir)
 
@@ -71,6 +81,14 @@ module Omnibus
       write_distribution_file
 
       build_product_pkg
+
+      if debug_build?
+        build_component_pkg(true)
+
+        write_distribution_file(true)
+
+        build_product_pkg(true)
+      end
     end
 
     #
@@ -124,8 +142,8 @@ module Omnibus
     # --------------------------------------------------
 
     # @see Base#package_name
-    def package_name
-      "#{safe_base_package_name}-#{safe_version}-#{safe_build_iteration}.pkg"
+    def package_name(debug = false)
+      "#{safe_base_package_name(debug)}-#{safe_version}-#{safe_build_iteration}.pkg"
     end
 
     #
@@ -133,8 +151,8 @@ module Omnibus
     #
     # @return [String]
     #
-    def final_pkg
-      File.expand_path("#{Config.package_dir}/#{package_name}")
+    def final_pkg(debug = false)
+      File.expand_path("#{Config.package_dir}/#{package_name(debug)}")
     end
 
     #
@@ -145,8 +163,12 @@ module Omnibus
     #
     # @return [String]
     #
-    def resources_dir
-      File.expand_path("#{staging_dir}/Resources")
+    def resources_dir(debug = false)
+      if debug
+        File.expand_path("#{staging_dbg_dir}/Resources")
+      else
+        File.expand_path("#{staging_dir}/Resources")
+      end
     end
 
     #
@@ -186,18 +208,19 @@ module Omnibus
     #
     # @return [void]
     #
-    def build_component_pkg
+    def build_component_pkg(debug = false)
+      stage = debug ? staging_dir : staging_dbg_dir
       command = <<-EOH.gsub(/^ {8}/, "")
         pkgbuild \\
-          --identifier "#{safe_identifier}" \\
+          --identifier "#{safe_identifier(debug)}" \\
           --version "#{safe_version}" \\
           --scripts "#{scripts_dir}" \\
-          --root "#{project.install_dir}" \\
+          --root "#{stage}" \\
           --install-location "#{project.install_dir}" \\
-          "#{component_pkg}"
+          "#{component_pkg(debug)}"
       EOH
 
-      Dir.chdir(staging_dir) do
+      Dir.chdir(stage) do
         shellout!(command)
       end
     end
@@ -212,15 +235,16 @@ module Omnibus
     #
     # @return [void]
     #
-    def write_distribution_file
+    def write_distribution_file(debug = false)
+      stage = debug ? staging_dir : staging_dbg_dir
       render_template(resource_path("distribution.xml.erb"),
-        destination: "#{staging_dir}/Distribution",
+        destination: "#{stage}/Distribution",
         mode: 0600,
         variables: {
           friendly_name: project.friendly_name,
-          identifier:    safe_identifier,
+          identifier:    safe_identifier(debug),
           version:       safe_version,
-          component_pkg: component_pkg,
+          component_pkg: component_pkg(debug),
         }
       )
     end
@@ -231,18 +255,19 @@ module Omnibus
     #
     # @return [void]
     #
-    def build_product_pkg
+    def build_product_pkg(debug = false)
+      stage = debug ? staging_dir : staging_dbg_dir
       command = <<-EOH.gsub(/^ {8}/, "")
         productbuild \\
-          --distribution "#{staging_dir}/Distribution" \\
-          --resources "#{resources_dir}" \\
+          --distribution "#{stage}/Distribution" \\
+          --resources "#{resources_dir(debug)}" \\
       EOH
 
       command << %Q{  --sign "#{signing_identity}" \\\n} if signing_identity
-      command << %Q{  "#{final_pkg}"}
+      command << %Q{  "#{final_pkg(debug)}"}
       command << %Q{\n}
 
-      Dir.chdir(staging_dir) do
+      Dir.chdir(stage) do
         shellout!(command)
       end
     end
@@ -252,8 +277,8 @@ module Omnibus
     #
     # @return [String] the filename of the component .pkg file to create.
     #
-    def component_pkg
-      "#{safe_base_package_name}-core.pkg"
+    def component_pkg(debug = false)
+      "#{safe_base_package_name(debug)}-core.pkg"
     end
 
     #
@@ -261,9 +286,9 @@ module Omnibus
     #
     # @return [String]
     #
-    def safe_base_package_name
+    def safe_base_package_name(debug = false)
       if project.package_name =~ /\A[[:alnum:]-]+\z/
-        project.package_name.dup
+        name = project.package_name.dup
       else
         converted = project.package_name.downcase.gsub(/[^[:alnum:]+]/, "")
 
@@ -273,8 +298,10 @@ module Omnibus
           "`#{project.package_name}' to `#{converted}'."
         end
 
-        converted
+        name = converted
       end
+
+      debug ? "#{name}-dbg" : name
     end
 
     #
@@ -284,11 +311,11 @@ module Omnibus
     #
     # @return [String]
     #
-    def safe_identifier
+    def safe_identifier(debug = false)
       return identifier if identifier
 
       maintainer = project.maintainer.gsub(/[^[:alnum:]+]/, "").downcase
-      "test.#{maintainer}.pkg.#{safe_base_package_name}"
+      "test.#{maintainer}.pkg.#{safe_base_package_name(debug)}"
     end
 
     #
