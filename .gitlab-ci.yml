@@ -1,0 +1,13 @@
+stages:
+  - quality
+
+########################################
+#               QUALITY                #
+########################################
+
+quality:
+  image: ruby:2.5
+  stage: quality
+  script:
+    - bundle install --path .bundle
+    - bash scripts/format-check.sh
