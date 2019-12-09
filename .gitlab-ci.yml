@@ -11,3 +11,5 @@ quality:
   script:
     - bundle install --path .bundle
     - bash scripts/format-check.sh
+  tags: [ "runner:main", "size:large" ]
+
