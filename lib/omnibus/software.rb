@@ -640,6 +640,16 @@ module Omnibus
     end
     expose :python_3_embedded
 
+    def glibc_version
+      @project.glibc_version
+    end
+    expose :glibc_version
+
+    def glibc_arch
+      @project.glibc_arch
+    end
+    expose :glibc_arch
+
     #
     # Define a series of {Builder} DSL commands that are executed to build the
     # software.
@@ -842,6 +852,16 @@ module Omnibus
       env.merge(path_key => path_value)
     end
     expose :with_embedded_path
+
+    def with_glibc_version(env = {})
+
+      env['CFLAGS'] = "#{env['CFLAGS']} -include /usr/local/glibc_version_header/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
+      env['CPPFLAGS'] = "#{env['CPPFLAGS']} -include /usr/local/glibc_version_header/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
+      env['CXXFLAGS'] = "#{env['CXXFLAGS']} -include /usr/local/glibc_version_header/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
+
+      env
+    end
+    expose :with_glibc_version
 
     #
     # Returns the platform safe full path under embedded/bin directory to the

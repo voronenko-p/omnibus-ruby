@@ -210,6 +210,35 @@ module Omnibus
       end
     end
     expose :python_3_embedded
+
+    def glibc_version(val = NULL)
+      valid_versions = ['2.27', '2.23', '2.14.1', '2.8', '2.16',
+                        '2.6', '2.18', '2.24', '2.20', '2.15',
+                        '2.10.2', '2.12.2', '2.5', '2.25', '2.21',
+                        '2.14', '2.11.3', '2.6.1', '2.26', '2.22',
+                        '2.5.1', '2.17', '2.9', '2.19', '2.7', '2.13']
+
+      if null?(val)
+        @glibc_version || raise(MissingRequiredAttribute.new(self, :glibc_version, "/opt/chef"))
+      else
+        raise Error, "invalid libc version specified" if !valid_versions.include? val
+        @glibc_version = val
+      end
+    end
+    expose :glibc_version
+
+    def glibc_arch(val = NULL)
+      valid_archs = ['x64',' x86']
+
+      if null?(val)
+        @glibc_arch || raise(MissingRequiredAttribute.new(self, :glibc_arch, "/opt/chef"))
+      else
+        raise Error, "invalid architecture specified" if !valid_archs.include? val
+        @glibc_arch = val
+      end
+    end
+    expose :glibc_arch
+
     #
     # The default root where a project should be installed. On Windows-based
     # systems, this value defaults to +C:+. On non-Windows systems, this value
