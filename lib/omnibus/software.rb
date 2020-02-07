@@ -855,9 +855,9 @@ module Omnibus
 
     def with_glibc_version(env = {})
 
-      env['CFLAGS'] = "#{env['CFLAGS']} -include /usr/local/glibc_version_header/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
-      env['CPPFLAGS'] = "#{env['CPPFLAGS']} -include /usr/local/glibc_version_header/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
-      env['CXXFLAGS'] = "#{env['CXXFLAGS']} -include /usr/local/glibc_version_header/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
+      env['CFLAGS'] = "#{env['CFLAGS']} -include /usr/local/glibc_version_header/version_headers/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
+      env['CPPFLAGS'] = "#{env['CPPFLAGS']} -include /usr/local/glibc_version_header/version_headers/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
+      env['CXXFLAGS'] = "#{env['CXXFLAGS']} -include /usr/local/glibc_version_header/version_headers/#{glibc_arch}/force_link_glibc_#{glibc_version}.h"
 
       env
     end
