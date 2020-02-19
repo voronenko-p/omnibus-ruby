@@ -201,6 +201,7 @@ module Omnibus
       end
 
       timestamp_servers.each do |ts|
+        puts "signing with timestamp server: #{ts}"
         success = try_sign(safe_package_file, ts)
 
         puts "signed" if success
