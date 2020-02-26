@@ -204,7 +204,7 @@ module Omnibus
         puts "signing with timestamp server: #{ts}"
         success = try_sign(safe_package_file, ts)
 
-        puts "signed" if success
+        puts "signed with timestamp server: #{ts}" if success
 
         break if success
       end
