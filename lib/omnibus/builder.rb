@@ -78,11 +78,20 @@ module Omnibus
     #
     # @return [void]
     #
-    def command(command, options = {})
+    def command(command, show_stdout = false, show_stderr = false, options = {})
       warn_for_shell_commands(command)
 
       build_commands << BuildCommand.new("Execute: `#{command}'") do
-        shellout!(command, options)
+        cmd = shellout!(command, options)
+
+        if show_stdout
+          puts "stdout: "
+          puts cmd.stdout
+        end
+        if show_stderr
+          puts "stderr: "
+          puts cmd.stderr
+        end
       end
     end
     expose :command
