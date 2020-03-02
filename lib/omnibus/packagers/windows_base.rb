@@ -16,7 +16,8 @@
 
 module Omnibus
   class Packager::WindowsBase < Packager::Base
-    DEFAULT_TIMESTAMP_SERVERS = ["http://timestamp.digicert.com",
+    DEFAULT_TIMESTAMP_SERVERS = ["http://timestamp.globalsign.com/scripts/timstamp.dll",
+                                 "http://timestamp.digicert.com",
                                  "http://timestamp.verisign.com/scripts/timestamp.dll"]
 
     #
