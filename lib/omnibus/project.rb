@@ -1072,6 +1072,19 @@ module Omnibus
       @extra_package_files ||= []
     end
 
+    def windows_files_to_strip(val = NULL)
+      if null?(val)
+        @windows_files_to_strip
+      else
+        unless val.is_a?(Array)
+          raise InvalidValue.new(:windows_files_to_strip, "be an Array")
+        end
+
+        @windows_files_to_strip = val
+      end
+    end
+    expose :windows_files_to_strip
+
     #
     # The list of software dependencies for this project.
     #
