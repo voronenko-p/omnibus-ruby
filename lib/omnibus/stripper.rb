@@ -33,7 +33,7 @@ module Omnibus
     end
 
     #
-    # Run the stripping operation. Stripping currently only available on windows.
+    # Run the stripping operation. Stripping currently only available on Linux.
     #
     # TODO: implement other platforms windows, macOS, etc
     #
@@ -50,7 +50,7 @@ module Omnibus
         when "aix"
           log.warn(log_key) { "Currently unsupported in AIX platforms." }
         when "windows"
-          log.warn(log_key) { "Currently unsupported in windows platforms." }
+          strip_windows
         else
           strip_linux
         end
@@ -92,6 +92,101 @@ module Omnibus
         shellout!("strip --strip-debug --strip-unneeded #{source}")
         shellout("objcopy --add-gnu-debuglink=#{target} #{source}")
         shellout!("chmod -x #{target}")
+      end
+    end
+
+    #
+    # Strip symbol from binaries on Windows. Note that this behavior differs from Linux.
+    #
+    # On Windows, DBG files are the original files, aka the un-stripped files.
+    # On Linux, DBG files are just symbol files.
+    #
+    # On Windows, symbol files can be used for non-live debugging e.g. dlv core c:\share\agent.dbg "C:\Share\agent.DMP"
+    # However, DLV cannot use the pure symbol files in live debugging:
+    #
+    #   C:\>dlv attach 6600 "C:\Program Files\Datadog\Datadog Agent\bin\agent.dbg"
+    #   could not attach to pid 6600: decoding dwarf section info at offset 0x0: too short
+    #
+    #   C:\Program Files\Datadog\Datadog Agent\bin>dlv attach 4024
+    #   could not attach to pid 4024: decoding dwarf section info at offset 0x0: too short
+    #
+    # To enable live debugging on Windows, we make DBG files on Windows the unstripped file.
+    # To perform live debugging, one must manually replace the stripped file with unstripped
+    # first, then can start debugging use DLV.
+    #
+    # To perform non-live debugging, the same command can be used, e.g. dlv core c:\share\agent.dbg "C:\Share\agent.DMP"
+    #
+    def strip_windows
+      path = project.install_dir
+      # log.debug(log_key) { "stripping on windows: #{path}" }
+      log.info(log_key) { "stripping on windows: #{path}" }
+
+      symboldir = File.join(path, ".debug")
+      # log.debug(log_key) { "putting symbols here: #{symboldir}" }
+      log.info(log_key) { "putting symbols here: #{symboldir}" }
+
+      if project.windows_files_to_strip
+        project.windows_files_to_strip.each do |elf|
+          # log.debug(log_key) { "processing: #{elf}" }
+          log.info(log_key) { "processing: #{elf}" }
+          source = elf.strip
+
+          log.info(log_key) { "processing source: #{source}" } # XXX
+
+          debugfile = "#{source}.debug"
+          #
+          # Unlike Linux, we have a drive letter in front of the path. Need to drop it before
+          # joining the path.
+          # So far the final path length is less than 255, but need to watch out.
+          #
+          debugfile = debugfile[2..debugfile.length-1] if debugfile[1] == ":"
+
+          log.info(log_key) { "processing debugfile: #{debugfile}" } # XXX
+
+          target = File.join(symboldir, debugfile)
+          log.info(log_key) { "processing target: #{target}" } # XXX
+          if target.length > 255
+            log.error(log_key) { "target name is too long: #{target}" }
+          end
+
+          elfdir = File.dirname(target)
+          log.info(log_key) { "processing elfdir: #{elfdir}" } # XXX
+          FileUtils.mkdir_p "#{elfdir}" unless Dir.exist? "#{elfdir}"
+
+          # log.debug(log_key) { "stripping #{source}, putting original file into #{target}" }
+          log.info(log_key) { "stripping #{source}, putting original file into #{target}" }
+          shellout!("cp #{source} #{target}")
+          shellout!("strip --strip-debug --strip-unneeded #{source}")
+        end
+
+        #
+        # Zip the debug folder.
+        #
+        zip_file = windows_safe_path(Config.package_dir, "#{project.package_name}-#{project.build_version}-#{project.build_iteration}-#{Config.windows_arch}.debug.zip")
+        log.info(log_key) { "producing debug package #{zip_file}" }
+        cmd = <<-EOH.split.join(" ").squeeze(" ").strip
+          7z a -r
+          #{zip_file}
+          #{symboldir}\\*
+        EOH
+        shellout!(cmd)
+
+        #
+        # Remove the symbol directory, otherwise it will appear in the MSI and ZIP file.
+        #
+        cmd = <<-EOH.split.join(" ").squeeze(" ").strip
+          rm -rf
+          #{symboldir}
+        EOH
+        shellout!(cmd)
+
+        destination = File.expand_path("pkg", Config.project_root)
+
+        # Create the destination directory
+        unless File.directory?(destination)
+          FileUtils.mkdir_p(destination)
+        end
+        FileUtils.cp(zip_file, destination, preserve: true) 
       end
     end
   end
