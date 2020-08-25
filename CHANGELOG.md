@@ -1,7 +1,7 @@
 Omnibus CHANGELOG
 =================
 
-v5.5.0 (August 16, 2016)
+v5.6.0 (August 16, 2016)
 -----------------------
 ### New Features
 - Add build timings to the local output (#669)
