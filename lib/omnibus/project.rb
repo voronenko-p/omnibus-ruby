@@ -694,6 +694,24 @@ module Omnibus
     end
     expose :runtime_dependency
 
+    #
+    # Add a package that is a weak runtime dependency of this project.
+    #
+    # @example
+    #   runtime_weak_dependency 'foo'
+    #
+    # @param [String] val
+    #   the name of the weak runtime dependency
+    #
+    # @return [Array<String>]
+    #   the list of weak runtime dependencies
+    #
+    def runtime_weak_dependency(val)
+      runtime_weak_dependencies << val
+      runtime_weak_dependencies.dup
+    end
+    expose :runtime_weak_dependency
+
     # Add package(s) that this project extends.
     #
     # Use this to avoid packaging many files and libraries already included by
@@ -1081,6 +1099,17 @@ module Omnibus
     #
     def runtime_dependencies
       @runtime_dependencies ||= []
+    end
+
+    #
+    # The list of weak software dependencies for this project.
+    #
+    # These is the software that may be used at runtime for your project.
+    #
+    # @return [Array<String>]
+    #
+    def runtime_weak_dependencies
+      @runtime_weak_dependencies ||= []
     end
 
     # The list of packages this project extends.

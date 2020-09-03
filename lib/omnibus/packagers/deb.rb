@@ -288,6 +288,7 @@ module Omnibus
                         conflicts: project.conflicts,
                         replaces: project.replaces,
                         dependencies: pkg_dependencies,
+                        weak_dependencies: project.runtime_weak_dependencies,
                       })
     end
 
