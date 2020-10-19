@@ -16,8 +16,7 @@ module Omnibus
         md5:    "abc123",
         sha1:   "abc123",
         sha256: "abcd1234",
-        sha512: "abcdef123456"
-      )
+        sha512: "abcdef123456")
     end
 
     let(:project) do
@@ -29,33 +28,31 @@ module Omnibus
         build_iteration:  "1",
         license:          "Apache-2.0",
         built_manifest:    double(Manifest,
-                                  to_hash: {
-                                    manifest_format: 2,
-                                    build_version: "1.2.3",
-                                    build_git_revision: "SHA",
-                                    license: "Apache-2.0",
-                                  }
-                                ),
-        license_file_path: license_path
-      )
+          to_hash: {
+            manifest_format: 2,
+            build_version: "1.2.3",
+            build_git_revision: "SHA",
+            license: "Apache-2.0",
+          }),
+        license_file_path: license_path)
     end
 
     let(:data) { { foo: "bar" } }
     let(:license_file_content) do
-      <<-EOH
-some_project 1.2.3 license: "Apache-2.0"
+      <<~EOH
+        some_project 1.2.3 license: "Apache-2.0"
 
-                              Apache License
-                        Version 2.0, January 2004
-                     http://www.apache.org/licenses/
-TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+                                      Apache License
+                                Version 2.0, January 2004
+                             http://www.apache.org/licenses/
+        TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-1. Definitions.
+        1. Definitions.
 
-   "License" shall mean the terms and conditions for use, reproduction,
-   and distribution as defined by Sections 1 through 9 of this document.
+           "License" shall mean the terms and conditions for use, reproduction,
+           and distribution as defined by Sections 1 through 9 of this document.
 
-...
+        ...
       EOH
     end
 
@@ -85,7 +82,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
           sha256:   "abcd1234",
           sha512:   "abcdef123456",
           platform: "ubuntu",
-          platform_version: "12.04",
+          platform_version: "16.04",
           arch: "x86_64",
           name: "some-project",
           friendly_name: "Some Project",
@@ -130,7 +127,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
       let(:architecture) { "x86_64" }
 
       before do
-        stub_ohai(platform: "ubuntu", version: "12.04") do |data|
+        stub_ohai(platform: "ubuntu", version: "16.04") do |data|
           data["kernel"]["machine"] = architecture
         end
       end
@@ -180,17 +177,17 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
     describe ".platform_shortname" do
       it "returns el on rhel" do
-        stub_ohai(platform: "redhat", version: "6.4")
+        stub_ohai(platform: "redhat", version: "6.9")
         expect(described_class.platform_shortname).to eq("el")
       end
 
       it "returns sles on suse" do
-        stub_ohai(platform: "suse", version: "12.0")
+        stub_ohai(platform: "suse", version: "12.2")
         expect(described_class.platform_shortname).to eq("sles")
       end
 
       it "returns .platform on all other systems" do
-        stub_ohai(platform: "ubuntu", version: "12.04")
+        stub_ohai(platform: "ubuntu", version: "16.04")
         expect(described_class.platform_shortname).to eq("ubuntu")
       end
     end
@@ -199,7 +196,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
       shared_examples "a version manipulator" do |platform_shortname, version, expected|
         context "on #{platform_shortname}-#{version}" do
           it "returns the correct value" do
-            stub_ohai(platform: "ubuntu", version: "12.04") do |data|
+            stub_ohai(platform: "ubuntu", version: "16.04") do |data|
               data["platform"] = platform_shortname
               data["platform_version"] = version
             end
@@ -210,6 +207,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
       end
 
       it_behaves_like "a version manipulator", "aix", "7.1", "7.1"
+      it_behaves_like "a version manipulator", "amazon", "2018.03", "2018.03"
       it_behaves_like "a version manipulator", "arch", "rolling", "rolling"
       it_behaves_like "a version manipulator", "centos", "5.9.6", "5"
       it_behaves_like "a version manipulator", "debian", "7.1", "7"
@@ -217,12 +215,12 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
       it_behaves_like "a version manipulator", "el", "6.5", "6"
       it_behaves_like "a version manipulator", "fedora", "11.5", "11"
       it_behaves_like "a version manipulator", "freebsd", "10.0", "10"
-      it_behaves_like "a version manipulator", "gentoo", "2004.3", "2004.3"
-      it_behaves_like "a version manipulator", "ios_xr", "6.0.0.14I", "6"
+      it_behaves_like "a version manipulator", "gentoo", "4.9.95-gentoo", "rolling"
+      it_behaves_like "a version manipulator", "kali", "rolling", "rolling"
       it_behaves_like "a version manipulator", "mac_os_x", "10.9.1", "10.9"
-      it_behaves_like "a version manipulator", "nexus", "5.0", "5"
       it_behaves_like "a version manipulator", "omnios", "r151010", "r151010"
       it_behaves_like "a version manipulator", "openbsd", "5.4.4", "5.4"
+      it_behaves_like "a version manipulator", "opensuseleap", "42.3", "42.3"
       it_behaves_like "a version manipulator", "opensuse", "5.9", "5.9"
       it_behaves_like "a version manipulator", "pidora", "11.5", "11"
       it_behaves_like "a version manipulator", "raspbian", "7.1", "7"
@@ -247,7 +245,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
       context "given an unknown platform" do
         before do
-          stub_ohai(platform: "ubuntu", version: "12.04") do |data|
+          stub_ohai(platform: "ubuntu", version: "16.04") do |data|
             data["platform"] = "bacon"
             data["platform_version"] = "1.crispy"
           end
@@ -261,7 +259,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
       context "given an unknown windows platform version" do
         before do
-          stub_ohai(platform: "ubuntu", version: "12.04") do |data|
+          stub_ohai(platform: "ubuntu", version: "16.04") do |data|
             data["platform"] = "windows"
             data["platform_version"] = "1.2.3"
           end
@@ -293,13 +291,6 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
         expect(instance[:platform]).to eq("ubuntu")
       end
 
-      it "ensures platform version is properly truncated" do
-        allow(File).to receive(:read).and_return('{ "platform": "el", "platform_version": "5.10" }')
-        instance = described_class.for_package(package)
-
-        expect(instance[:platform_version]).to eq("5")
-      end
-
       it "correctly truncates sles platform versions" do
         allow(File).to receive(:read).and_return('{ "platform": "sles", "platform_version": "11.2" }')
         instance = described_class.for_package(package)
@@ -329,20 +320,20 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
       end
     end
 
-    describe '#name' do
+    describe "#name" do
       it "returns the basename of the package" do
         expect(subject.name).to eq("package.deb.metadata.json")
       end
     end
 
-    describe '#path' do
+    describe "#path" do
       it "delegates to .path_for" do
         expect(described_class).to receive(:path_for).once
         subject.path
       end
     end
 
-    describe '#save' do
+    describe "#save" do
       let(:file) { double(File) }
 
       before { allow(File).to receive(:open).and_yield(file) }
@@ -353,7 +344,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
       end
     end
 
-    describe '#to_json' do
+    describe "#to_json" do
       it "generates pretty JSON" do
         expect(subject.to_json.strip).to eq <<-EOH.gsub(/^ {10}/, "").strip
           {

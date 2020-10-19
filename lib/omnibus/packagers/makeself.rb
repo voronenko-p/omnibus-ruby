@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -78,10 +78,10 @@ module Omnibus
     def write_makeselfinst
       makeselfinst_staging_path = File.join(staging_dir, "makeselfinst")
       render_template(resource_path("makeselfinst.erb"),
-                      destination: makeselfinst_staging_path,
-                      variables: {
-                        install_dir: project.install_dir,
-                      })
+        destination: makeselfinst_staging_path,
+        variables: {
+          install_dir: project.install_dir,
+        })
       FileUtils.chmod(0755, makeselfinst_staging_path)
     end
 

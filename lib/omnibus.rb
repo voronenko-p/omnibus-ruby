@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +17,13 @@
 require "omnibus/core_extensions"
 
 require "cleanroom"
-require "pathname"
+require "pathname" unless defined?(Pathname)
 
+require "omnibus/digestable"
 require "omnibus/exceptions"
+require "omnibus/sugarable"
+require "omnibus/util"
+require "omnibus/fetcher"
 require "omnibus/version"
 
 module Omnibus
@@ -36,9 +40,7 @@ module Omnibus
   autoload :Cleaner,          "omnibus/cleaner"
   autoload :Compressor,       "omnibus/compressor"
   autoload :Config,           "omnibus/config"
-  autoload :Digestable,       "omnibus/digestable"
   autoload :Error,            "omnibus/exceptions"
-  autoload :Fetcher,          "omnibus/fetcher"
   autoload :FileSyncer,       "omnibus/file_syncer"
   autoload :Generator,        "omnibus/generator"
   autoload :GitCache,         "omnibus/git_cache"
@@ -58,16 +60,15 @@ module Omnibus
   autoload :Reports,          "omnibus/reports"
   autoload :S3Cache,          "omnibus/s3_cache"
   autoload :Software,         "omnibus/software"
-  autoload :Sugarable,        "omnibus/sugarable"
   autoload :Templating,       "omnibus/templating"
   autoload :ThreadPool,       "omnibus/thread_pool"
-  autoload :Util,             "omnibus/util"
   autoload :Licensing,        "omnibus/licensing"
 
   autoload :GitFetcher,  "omnibus/fetchers/git_fetcher"
   autoload :NetFetcher,  "omnibus/fetchers/net_fetcher"
   autoload :NullFetcher, "omnibus/fetchers/null_fetcher"
   autoload :PathFetcher, "omnibus/fetchers/path_fetcher"
+  autoload :FileFetcher, "omnibus/fetchers/file_fetcher"
 
   autoload :ArtifactoryPublisher, "omnibus/publishers/artifactory_publisher"
   autoload :NullPublisher,        "omnibus/publishers/null_publisher"
@@ -208,7 +209,7 @@ module Omnibus
     # @return [Pathname]
     #
     def source_root
-      @source_root ||= Pathname.new(File.expand_path("../..", __FILE__))
+      @source_root ||= Pathname.new(File.expand_path("..", __dir__))
     end
 
     #

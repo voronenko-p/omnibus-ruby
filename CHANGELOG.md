@@ -1,5 +1,347 @@
-Omnibus CHANGELOG
-=================
+<!-- usage documentation: http://expeditor-docs.es.chef.io/configuration/changelog/ -->
+
+<!-- latest_release 7.0.32 -->
+## [7.0.32](https://github.com/chef/omnibus/tree/7.0.32) (2020-10-13)
+
+#### Merged Pull Requests
+- Update chefstyle requirement from = 1.4.3 to = 1.4.5 [#976](https://github.com/chef/omnibus/pull/976) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+<!-- latest_release -->
+<!-- release_rollup since=7.0.13 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- Update chefstyle requirement from = 1.4.3 to = 1.4.5 [#976](https://github.com/chef/omnibus/pull/976) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.32 -->
+- Remove old pins we don&#39;t need anymore [#974](https://github.com/chef/omnibus/pull/974) ([tas50](https://github.com/tas50)) <!-- 7.0.31 -->
+- Require Ruby 2.6 or later [#971](https://github.com/chef/omnibus/pull/971) ([tas50](https://github.com/tas50)) <!-- 7.0.30 -->
+- Fix dependency path for env with racc gem [#972](https://github.com/chef/omnibus/pull/972) ([jaymalasinha](https://github.com/jaymalasinha)) <!-- 7.0.29 -->
+- Test on Ruby 2.7 in buildkite [#926](https://github.com/chef/omnibus/pull/926) ([tas50](https://github.com/tas50)) <!-- 7.0.28 -->
+- Update chefstyle requirement from = 1.4.2 to = 1.4.3 [#970](https://github.com/chef/omnibus/pull/970) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.27 -->
+- Update chefstyle requirement from = 1.4.0 to = 1.4.2 [#969](https://github.com/chef/omnibus/pull/969) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.26 -->
+- Update chefstyle requirement from = 1.3.2 to = 1.4.0 [#968](https://github.com/chef/omnibus/pull/968) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.25 -->
+- Update chefstyle requirement from = 1.2.1 to = 1.3.2 [#967](https://github.com/chef/omnibus/pull/967) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.24 -->
+- Fix Ruby 2.4 tests [#963](https://github.com/chef/omnibus/pull/963) ([tas50](https://github.com/tas50)) <!-- 7.0.23 -->
+- Optimize our requires [#960](https://github.com/chef/omnibus/pull/960) ([tas50](https://github.com/tas50)) <!-- 7.0.22 -->
+- Switch expand_path on file to expand_path on dir [#959](https://github.com/chef/omnibus/pull/959) ([tas50](https://github.com/tas50)) <!-- 7.0.21 -->
+- Update chefstyle requirement from = 1.2.0 to = 1.2.1 [#958](https://github.com/chef/omnibus/pull/958) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.20 -->
+- Ruby 2.7.1 adds a warning on calling open directly, needs to be URI.open [#940](https://github.com/chef/omnibus/pull/940) ([mattray](https://github.com/mattray)) <!-- 7.0.19 -->
+- Update chefstyle requirement from = 1.1.3 to = 1.2.0 [#957](https://github.com/chef/omnibus/pull/957) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.18 -->
+- Remove legacy CI configs and redundant encoding comment [#956](https://github.com/chef/omnibus/pull/956) ([tas50](https://github.com/tas50)) <!-- 7.0.17 -->
+- Fill in some of the gotchas that are easy to hit with omnibus [#951](https://github.com/chef/omnibus/pull/951) ([jaymzh](https://github.com/jaymzh)) <!-- 7.0.16 -->
+- Update chefstyle requirement from = 1.1.2 to = 1.1.3 [#955](https://github.com/chef/omnibus/pull/955) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.15 -->
+- Update chefstyle requirement from = 1.1.0 to = 1.1.2 [#954](https://github.com/chef/omnibus/pull/954) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 7.0.14 -->
+<!-- release_rollup -->
+<!-- latest_stable_release -->
+## [7.0.13](https://github.com/chef/omnibus/tree/7.0.13) (2020-06-15)
+
+#### Merged Pull Requests
+- Revert &quot;Pin ffi to &lt; 0.13 for windows&quot; now that 1.13.1 is out [#949](https://github.com/chef/omnibus/pull/949) ([tas50](https://github.com/tas50))
+<!-- latest_stable_release -->
+
+## [7.0.12](https://github.com/chef/omnibus/tree/7.0.12) (2020-06-05)
+
+#### Merged Pull Requests
+- old PR that was merged was very old [#910](https://github.com/chef/omnibus/pull/910) ([lamont-granquist](https://github.com/lamont-granquist))
+- Don&#39;t mark the cache dirty if it already is. [#911](https://github.com/chef/omnibus/pull/911) ([btm](https://github.com/btm))
+- Update chefstyle requirement from = 0.13.3 to = 0.14.0 [#912](https://github.com/chef/omnibus/pull/912) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Switch back to chef-sugar [#914](https://github.com/chef/omnibus/pull/914) ([tas50](https://github.com/tas50))
+- Remove Solaris 10 platform and enable some hardening flags on Linux/Mac/FreeBSD [#915](https://github.com/chef/omnibus/pull/915) ([lamont-granquist](https://github.com/lamont-granquist))
+- Minor spelling, grammar, punctuation [#917](https://github.com/chef/omnibus/pull/917) ([ehershey](https://github.com/ehershey))
+- fix typo [#916](https://github.com/chef/omnibus/pull/916) ([ehershey](https://github.com/ehershey))
+- Remove myself as maintainer [#919](https://github.com/chef/omnibus/pull/919) ([scotthain](https://github.com/scotthain))
+- Typos, formatting, links to other generated files [#918](https://github.com/chef/omnibus/pull/918) ([ehershey](https://github.com/ehershey))
+- Update thor requirement from ~&gt; 0.18 to &gt;= 0.18, &lt; 2.0 [#921](https://github.com/chef/omnibus/pull/921) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Update the rpm package signing to work with newer rpm version [#892](https://github.com/chef/omnibus/pull/892) ([twk3](https://github.com/twk3))
+- Cache gem installs in S3 to speed up tests [#925](https://github.com/chef/omnibus/pull/925) ([tas50](https://github.com/tas50))
+- Implement deep signing for macOS Notarization [#924](https://github.com/chef/omnibus/pull/924) ([jonsmorrow](https://github.com/jonsmorrow))
+- Add AWS IAM authentication for S3 caching and publishing [#927](https://github.com/chef/omnibus/pull/927) ([jeremiahsnapp](https://github.com/jeremiahsnapp))
+- Enable entitlements file for macOS [#928](https://github.com/chef/omnibus/pull/928) ([jonsmorrow](https://github.com/jonsmorrow))
+- point to 1-stable branch for changes to the overrides.rb file. [#930](https://github.com/chef/omnibus/pull/930) ([PrajaktaPurohit](https://github.com/PrajaktaPurohit))
+- Update instructions to get builds passing when a new license needs to be added. [#932](https://github.com/chef/omnibus/pull/932) ([PrajaktaPurohit](https://github.com/PrajaktaPurohit))
+- Update chefstyle requirement from = 0.14.0 to = 0.14.1 [#929](https://github.com/chef/omnibus/pull/929) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Whitelist libanl [#934](https://github.com/chef/omnibus/pull/934) ([lamont-granquist](https://github.com/lamont-granquist))
+- Fix Ubuntu version in generated README.md [#935](https://github.com/chef/omnibus/pull/935) ([stevendanna](https://github.com/stevendanna))
+- Update chefstyle requirement from = 0.14.1 to = 0.15.1 [#936](https://github.com/chef/omnibus/pull/936) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Update chefstyle requirement from = 0.15.1 to = 1.0.1 [#937](https://github.com/chef/omnibus/pull/937) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Update ohai requirement from &gt;= 13, &lt; 16 to &gt;= 13, &lt; 17 [#939](https://github.com/chef/omnibus/pull/939) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Update chefstyle requirement from = 1.0.1 to = 1.1.0 [#942](https://github.com/chef/omnibus/pull/942) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Pin ffi to &lt; 0.13 for windows [#943](https://github.com/chef/omnibus/pull/943) ([james-stocks](https://github.com/james-stocks))
+
+## [6.1.9](https://github.com/chef/omnibus/tree/6.1.9) (2019-11-01)
+
+#### Merged Pull Requests
+- force builds nil versions [#619](https://github.com/chef/omnibus/pull/619) ([lamont-granquist](https://github.com/lamont-granquist))
+- Update chefstyle requirement from = 0.12 to = 0.13.3 [#900](https://github.com/chef/omnibus/pull/900) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+
+## [6.1.7](https://github.com/chef/omnibus/tree/6.1.7) (2019-10-29)
+
+#### Merged Pull Requests
+- Add Whitelist Libs for Catalina [#909](https://github.com/chef/omnibus/pull/909) ([jonsmorrow](https://github.com/jonsmorrow))
+- add `kali` as rolling OS [#907](https://github.com/chef/omnibus/pull/907) ([jmartin-r7](https://github.com/jmartin-r7))
+- Update artifactory requirement from ~&gt; 2.0 to ~&gt; 3.0 [#899](https://github.com/chef/omnibus/pull/899) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+
+## [6.1.4](https://github.com/chef/omnibus/tree/6.1.4) (2019-09-19)
+
+#### Merged Pull Requests
+- Separate removing writable dmg [#895](https://github.com/chef/omnibus/pull/895) ([jaymalasinha](https://github.com/jaymalasinha))
+- Use architecture from platform mappings file when publishing packages [#896](https://github.com/chef/omnibus/pull/896) ([jeremiahsnapp](https://github.com/jeremiahsnapp))
+- Change exclude to use `**` to skip levels [#834](https://github.com/chef/omnibus/pull/834) ([richardc](https://github.com/richardc))
+- Pretty print version manifest to pkg folder [#839](https://github.com/chef/omnibus/pull/839) ([balasankarc](https://github.com/balasankarc))
+- Unmount dmg before detaching [#897](https://github.com/chef/omnibus/pull/897) ([jaymalasinha](https://github.com/jaymalasinha))
+- use chef-fauxhai, chef-sugar-ng and chef-cleanroom gems [#903](https://github.com/chef/omnibus/pull/903) ([lamont-granquist](https://github.com/lamont-granquist))
+
+## [6.0.30](https://github.com/chef/omnibus/tree/6.0.30) (2019-06-13)
+
+#### Merged Pull Requests
+- Add buildkite PR verification to expeditor [#891](https://github.com/chef/omnibus/pull/891) ([tas50](https://github.com/tas50))
+- Switch off my fork of rspec-json_expectations &amp; fix spec failures [#885](https://github.com/chef/omnibus/pull/885) ([tas50](https://github.com/tas50))
+
+## [v6.0.25](https://github.com/chef/omnibus/tree/v6.0.25) (2019-04-16)
+
+#### Merged Pull Requests
+- Support authenticated HTTP URLs (fixes #851) [#852](https://github.com/chef/omnibus/pull/852) ([LeeXGreen](https://github.com/LeeXGreen))
+
+## [v6.0.24](https://github.com/chef/omnibus/tree/v6.0.24) (2019-04-08)
+
+#### Merged Pull Requests
+- New projects lacked critical files, such as kitchen and package scripts [#867](https://github.com/chef/omnibus/pull/867) ([iamjohnnym](https://github.com/iamjohnnym))
+
+## [v6.0.23](https://github.com/chef/omnibus/tree/v6.0.23) (2019-04-01)
+
+#### Merged Pull Requests
+- Break dmg creation and assets copying into separate steps [#881](https://github.com/chef/omnibus/pull/881) ([jeremiahsnapp](https://github.com/jeremiahsnapp))
+
+## [v6.0.22](https://github.com/chef/omnibus/tree/v6.0.22) (2019-03-28)
+
+#### Merged Pull Requests
+- Added localization option for msi packager [#854](https://github.com/chef/omnibus/pull/854) ([MrWong99](https://github.com/MrWong99))
+
+## [v6.0.21](https://github.com/chef/omnibus/tree/v6.0.21) (2019-03-20)
+
+#### Merged Pull Requests
+- Improve logging when overriding a version when there is no default [#880](https://github.com/chef/omnibus/pull/880) ([tas50](https://github.com/tas50))
+
+## [v6.0.20](https://github.com/chef/omnibus/tree/v6.0.20) (2019-03-18)
+
+#### Merged Pull Requests
+- Loosen mixlib-shellout/ohai deps and upgrade chefstyle [#879](https://github.com/chef/omnibus/pull/879) ([tas50](https://github.com/tas50))
+
+## [v6.0.19](https://github.com/chef/omnibus/tree/v6.0.19) (2019-02-26)
+
+#### Merged Pull Requests
+- Remove custom LDFLAGS and CFLAGS for osx. [#878](https://github.com/chef/omnibus/pull/878) ([jonsmorrow](https://github.com/jonsmorrow))
+
+## [v6.0.18](https://github.com/chef/omnibus/tree/v6.0.18) (2019-02-01)
+
+#### Merged Pull Requests
+- Add marcparadise to maintainers [#874](https://github.com/chef/omnibus/pull/874) ([marcparadise](https://github.com/marcparadise))
+
+## [v6.0.17](https://github.com/chef/omnibus/tree/v6.0.17) (2019-02-01)
+
+#### Merged Pull Requests
+- add support for light to delay validation [#842](https://github.com/chef/omnibus/pull/842) ([jmartin-r7](https://github.com/jmartin-r7))
+
+## [v6.0.16](https://github.com/chef/omnibus/tree/v6.0.16) (2019-02-01)
+
+#### Merged Pull Requests
+- allow project configuration to skip packagers [#843](https://github.com/chef/omnibus/pull/843) ([jmartin-r7](https://github.com/jmartin-r7))
+
+## [v6.0.15](https://github.com/chef/omnibus/tree/v6.0.15) (2019-02-01)
+
+#### Merged Pull Requests
+- Drop testing of unsupported platforms [#875](https://github.com/chef/omnibus/pull/875) ([marcparadise](https://github.com/marcparadise))
+
+## [v6.0.14](https://github.com/chef/omnibus/tree/v6.0.14) (2019-01-23)
+
+#### Merged Pull Requests
+- Whitelist the Security framework library on macOS [#873](https://github.com/chef/omnibus/pull/873) ([tas50](https://github.com/tas50))
+
+## [v6.0.13](https://github.com/chef/omnibus/tree/v6.0.13) (2019-01-23)
+
+#### Merged Pull Requests
+- Use a SPDX compliant license string in the gemspec [#869](https://github.com/chef/omnibus/pull/869) ([tas50](https://github.com/tas50))
+
+## [v6.0.12](https://github.com/chef/omnibus/tree/v6.0.12) (2019-01-18)
+
+#### Merged Pull Requests
+- Resolve test failures in Travis [#872](https://github.com/chef/omnibus/pull/872) ([tas50](https://github.com/tas50))
+
+## [v6.0.11](https://github.com/chef/omnibus/tree/v6.0.11) (2019-01-02)
+
+#### Merged Pull Requests
+- Change &#39;pretans&#39; to &#39;pretrans&#39; [#866](https://github.com/chef/omnibus/pull/866) ([ccheek21](https://github.com/ccheek21))
+
+## [v6.0.10](https://github.com/chef/omnibus/tree/v6.0.10) (2018-12-10)
+
+#### Merged Pull Requests
+- Revert &quot;Fix comparisons for semver style git tags&quot; [#865](https://github.com/chef/omnibus/pull/865) ([lamont-granquist](https://github.com/lamont-granquist))
+
+## [v6.0.9](https://github.com/chef/omnibus/tree/v6.0.9) (2018-12-07)
+
+#### Merged Pull Requests
+- Fix comparisons for semver style git tags [#864](https://github.com/chef/omnibus/pull/864) ([lamont-granquist](https://github.com/lamont-granquist))
+
+## [v6.0.8](https://github.com/chef/omnibus/tree/v6.0.8) (2018-12-03)
+
+#### Merged Pull Requests
+- S3 Publisher: Print the download URL for published artifacts [#829](https://github.com/chef/omnibus/pull/829) ([legal90](https://github.com/legal90))
+
+## [v6.0.7](https://github.com/chef/omnibus/tree/v6.0.7) (2018-11-26)
+
+#### Merged Pull Requests
+- Use RPM on Amazon Linux 2 [#863](https://github.com/chef/omnibus/pull/863) ([repeatedly](https://github.com/repeatedly))
+
+## [v6.0.6](https://github.com/chef/omnibus/tree/v6.0.6) (2018-11-19)
+
+#### Merged Pull Requests
+- Add &quot;cached_name&quot; option for net fetcher [#837](https://github.com/chef/omnibus/pull/837) ([legal90](https://github.com/legal90))
+
+## [v6.0.5](https://github.com/chef/omnibus/tree/v6.0.5) (2018-11-19)
+
+#### Merged Pull Requests
+- Add support of LGPL-2.0 license [#825](https://github.com/chef/omnibus/pull/825) ([legal90](https://github.com/legal90))
+
+## [v6.0.4](https://github.com/chef/omnibus/tree/v6.0.4) (2018-10-11)
+
+#### Merged Pull Requests
+- Remove generator file pins [#859](https://github.com/chef/omnibus/pull/859) ([lamont-granquist](https://github.com/lamont-granquist))
+
+## [v6.0.3](https://github.com/chef/omnibus/tree/v6.0.3) (2018-10-11)
+
+#### Merged Pull Requests
+- Using aws-sdk-s3 [#855](https://github.com/chef/omnibus/pull/855) ([JackDanger](https://github.com/JackDanger))
+
+## [v6.0.2](https://github.com/chef/omnibus/tree/v6.0.2) (2018-10-10)
+
+#### Merged Pull Requests
+- Unpin gcc-4.8 for later versions of Suse [#858](https://github.com/chef/omnibus/pull/858) ([jaymalasinha](https://github.com/jaymalasinha))
+
+## [v6.0.1](https://github.com/chef/omnibus/tree/v6.0.1) (2018-08-10)
+
+#### Merged Pull Requests
+- Update Opscode references to Chef and bump copyrights [#850](https://github.com/chef/omnibus/pull/850) ([tas50](https://github.com/tas50))
+- Bump to 6.0 and add release notes [#849](https://github.com/chef/omnibus/pull/849) ([tas50](https://github.com/tas50))
+
+## [v5.6.17](https://github.com/chef/omnibus/tree/v5.6.17) (2018-08-10)
+
+#### Merged Pull Requests
+- Update the generator kitchen file with modern platforms [#848](https://github.com/chef/omnibus/pull/848) ([tas50](https://github.com/tas50))
+
+## [v5.6.16](https://github.com/chef/omnibus/tree/v5.6.16) (2018-08-10)
+
+#### Merged Pull Requests
+- Remove gem version constraints and avoid installing pry in Travis [#847](https://github.com/chef/omnibus/pull/847) ([tas50](https://github.com/tas50))
+
+## [v5.6.15](https://github.com/chef/omnibus/tree/v5.6.15) (2018-08-09)
+
+#### Merged Pull Requests
+- Update truncate_platform_version with new platforms / update gentoo [#846](https://github.com/chef/omnibus/pull/846) ([tas50](https://github.com/tas50))
+
+## [v5.6.14](https://github.com/chef/omnibus/tree/v5.6.14) (2018-08-09)
+
+#### Merged Pull Requests
+- Remove support for FreeBSD 9 [#845](https://github.com/chef/omnibus/pull/845) ([tas50](https://github.com/tas50))
+
+## [v5.6.13](https://github.com/chef/omnibus/tree/v5.6.13) (2018-08-09)
+
+#### Merged Pull Requests
+- Bump versions of ohai, chef-sugar, and fauxhai [#844](https://github.com/chef/omnibus/pull/844) ([tas50](https://github.com/tas50))
+
+## [v5.6.12](https://github.com/chef/omnibus/tree/v5.6.12) (2018-04-13)
+
+#### Merged Pull Requests
+- Support appbundler 0.11.0 [#776](https://github.com/chef/omnibus/pull/776) ([lamont-granquist](https://github.com/lamont-granquist))
+
+## [v5.6.11](https://github.com/chef/omnibus/tree/v5.6.11) (2018-04-05)
+
+#### Merged Pull Requests
+- Fix typo (fixes Project.text_manifest_path) [#832](https://github.com/chef/omnibus/pull/832) ([benwtr](https://github.com/benwtr))
+
+## [v5.6.10](https://github.com/chef/omnibus/tree/v5.6.10) (2018-02-17)
+
+#### Merged Pull Requests
+- Loosen the pinning on &quot;ohai&quot; [#823](https://github.com/chef/omnibus/pull/823) ([richardc](https://github.com/richardc))
+
+## [v5.6.9](https://github.com/chef/omnibus/tree/v5.6.9) (2018-02-09)
+
+#### Merged Pull Requests
+- Add &quot;:file&quot; to the list of supported sources [#808](https://github.com/chef/omnibus/pull/808) ([legal90](https://github.com/legal90))
+
+## [v5.6.8](https://github.com/chef/omnibus/tree/v5.6.8) (2018-02-08)
+
+#### Merged Pull Requests
+- Avoid using git to determine gem contents [#820](https://github.com/chef/omnibus/pull/820) ([tduffield](https://github.com/tduffield))
+
+## [v5.6.7](https://github.com/chef/omnibus/tree/v5.6.7) (2018-02-08)
+
+#### Merged Pull Requests
+- Pin omnibus to license_scout ~&gt; 1.0 [#819](https://github.com/chef/omnibus/pull/819) ([tduffield](https://github.com/tduffield))
+
+## [v5.6.6](https://github.com/chef/omnibus/tree/v5.6.6) (2018-01-30)
+
+#### Merged Pull Requests
+- Empty commit to force release trigger [#817](https://github.com/chef/omnibus/pull/817) ([scotthain](https://github.com/scotthain))
+
+## [v5.6.5](https://github.com/chef/omnibus/tree/v5.6.5) (2018-01-30)
+
+#### Merged Pull Requests
+- Add config to allow rubygems publish and promote [#816](https://github.com/chef/omnibus/pull/816) ([scotthain](https://github.com/scotthain))
+
+## [v5.6.4](https://github.com/chef/omnibus/tree/v5.6.4) (2018-01-29)
+
+#### Merged Pull Requests
+- Update custom action and support MSIFASTINSTALL property [#815](https://github.com/chef/omnibus/pull/815) ([stuartpreston](https://github.com/stuartpreston))
+
+## [v5.6.3](https://github.com/chef/omnibus/tree/v5.6.3) (2018-01-26)
+
+#### Merged Pull Requests
+- sometimes we just need to gorram make a link [#814](https://github.com/chef/omnibus/pull/814) ([thommay](https://github.com/thommay))
+
+## [v5.6.2](https://github.com/chef/omnibus/tree/v5.6.2) (2018-01-25)
+
+#### Merged Pull Requests
+- Whitelist Foundation framework [#813](https://github.com/chef/omnibus/pull/813) ([thommay](https://github.com/thommay))
+
+v5.6.1 (June 22, 2017)
+----------------------
+### Bug Fixes
+- S3 cache: fix bug using access_key_id/secret_access_key (#786)
+
+v5.6.0 (June 20, 2017)
+----------------------
+### New Features
+- Add AWS Shared Credentials support.(#781)
+- Add option to build command to populate S3 cache. (#781)
+- Add strip BuildCommand. (#775)
+- Add support for building against omnibus-toolchain on Windows. (#759)
+- Don't require build user to have a configured Git identity (#758)
+- Added endpoint and S3 transfer acceleration as config options (#736)
+- Only checkout from git_cache once (#747)
+- IPS: Add version-lock facet at end of manifest (#745)
+- Alpine Linux Support (#744)
+- Add fips_mode flags (#742)
+- SmartOS pkgsrc support (#733)
+- Make DEB and RPM compression configurable (#738)
+- Check for the transitive dependency licensing errors during post_build. (#729)
+- Enable gcc 4.8 on suse/sles if available (#720)
+- Allow manually specify transitive dependency license information (#712)
+
+### Bug Fixes
+- Various bugfixes for APPX support. (#752, #759)
+- Expose overrides. (#780)
+- Fixed documentation links and table in README (#769, #778)
+- Fixed Travis CI Label (#777)
+- git_cache fixes: Use `.join` on git commands lines to avoid mangle and set
+  `core.ingorecase=false` (#768)
+- Ignore paths with braces in the BFF packager. (#771)
+- Switch from single to double quotes in git config. (#767)
+- Fixed Windows globbing. (#766)
+- Update pedump to latest released. (#714)
+- Retry git network operations by default (#753)
+- Fix guard for non-caching projects (#751)
+- DMG bug fixes (#748)
+- IPS Package fixes (#718, #728, #740)
+- Artifactory publisher fixes/improvements (#725)
+- Do not autoload fetcher to avoid eace condition (#715)
 
 v5.5.0 (August 16, 2016)
 -----------------------
@@ -229,7 +571,7 @@ v4.0.0 (December 15, 2014)
 - Retry uploads to Artifactory on publish failures.
 
 ### Potentially Breaking Changes
-- Remove embedded functional tests. Because the functional tests were skipped on CI (and require a system of each type to properly execute), they have been removed. Chef has created the [omnibus-harmony](https://github.com/opscode/omnibus-harmony) pipeline to perform true integration testing using the in-house CI cluster. If you were relying on the integration tests (or the associated Rake tasks), they have been removed.
+- Remove embedded functional tests. Because the functional tests were skipped on CI (and require a system of each type to properly execute), they have been removed. Chef has created the [omnibus-harmony](https://github.com/chef/omnibus-harmony) pipeline to perform true integration testing using the in-house CI cluster. If you were relying on the integration tests (or the associated Rake tasks), they have been removed.
 - Move vendored `makeself` and `makeself-header` script from `bin/` to `resources/` folder. Having the `makeself` script inside `bin/` would cause `makeself` to be bundled with the gem and added to `$PATH`. If you were previously relying on Omnibus adding `makeself` to your `$PATH`, this will no longer happen.
 - Cleanroom now subclasses `Object` instead of `Omnibus`. This could have unintended side-effects if you were accessing Omnibus internals (like `Config`) inside software or project DSL methods. You must now specify the entire namespace (e.g. `Omnibus::Config`).
 - Builder filesystem DSL methods change directory into `Software#project_dir` before executing.
@@ -525,7 +867,7 @@ v3.0.0 (March 27, 2014)
   - If you have software definitions that hard code `always_build`, you will probably want to turn that off now.
   - Blank directories are not cached. If you would like a blank directory to be cached, add a `.gitkeep` file to the folder.
   - The build order is compiled in a different way, which might result in a different ordered-installation than previous versions of omnibus.
-  - For an example of you you might need to update your project, please see [opscode/omnibus-software@02d06a](https://github.com/opscode/omnibus-software/commit/02d06a74c02340b592e1864e7ab843bc14fa352a)
+  - For an example of you you might need to update your project, please see [chef/omnibus-software@02d06a](https://github.com/chef/omnibus-software/commit/02d06a74c02340b592e1864e7ab843bc14fa352a)
 
 - Support for building DMGs (OSX Disk Images)
 - Update generator to create assets for pkg/dmg resources
@@ -701,23 +1043,22 @@ BUG FIXES:
 
 - The initial release.
 
-<!--- The following link definition list is generated by PimpMyChangelog --->
-[#63]: https://github.com/opscode/omnibus/issues/63
-[#67]: https://github.com/opscode/omnibus/issues/67
-[#70]: https://github.com/opscode/omnibus/issues/70
-[#71]: https://github.com/opscode/omnibus/issues/71
-[#72]: https://github.com/opscode/omnibus/issues/72
-[#73]: https://github.com/opscode/omnibus/issues/73
-[#74]: https://github.com/opscode/omnibus/issues/74
-[#77]: https://github.com/opscode/omnibus/issues/77
-[#78]: https://github.com/opscode/omnibus/issues/78
-[#79]: https://github.com/opscode/omnibus/issues/79
-[#80]: https://github.com/opscode/omnibus/issues/80
-[#81]: https://github.com/opscode/omnibus/issues/81
-[#82]: https://github.com/opscode/omnibus/issues/82
-[#83]: https://github.com/opscode/omnibus/issues/83
-[#85]: https://github.com/opscode/omnibus/issues/85
-[#86]: https://github.com/opscode/omnibus/issues/86
+[#63]: https://github.com/chef/omnibus/issues/63
+[#67]: https://github.com/chef/omnibus/issues/67
+[#70]: https://github.com/chef/omnibus/issues/70
+[#71]: https://github.com/chef/omnibus/issues/71
+[#72]: https://github.com/chef/omnibus/issues/72
+[#73]: https://github.com/chef/omnibus/issues/73
+[#74]: https://github.com/chef/omnibus/issues/74
+[#77]: https://github.com/chef/omnibus/issues/77
+[#78]: https://github.com/chef/omnibus/issues/78
+[#79]: https://github.com/chef/omnibus/issues/79
+[#80]: https://github.com/chef/omnibus/issues/80
+[#81]: https://github.com/chef/omnibus/issues/81
+[#82]: https://github.com/chef/omnibus/issues/82
+[#83]: https://github.com/chef/omnibus/issues/83
+[#85]: https://github.com/chef/omnibus/issues/85
+[#86]: https://github.com/chef/omnibus/issues/86
 [@benjaminws]: https://github.com/benjaminws
 [@christophergeers]: https://github.com/christophergeers
 [@christophermaier]: https://github.com/christophermaier

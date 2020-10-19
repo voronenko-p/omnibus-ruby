@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "fileutils"
+require "fileutils" unless defined?(FileUtils)
 require "omnibus/s3_helpers"
 
 module Omnibus
@@ -174,6 +174,8 @@ module Omnibus
           config[:sts_creds_profile] = Config.s3_sts_creds_profile
           config[:sts_creds_ecs_credentials] = Config.s3_sts_creds_ecs_credentials
           config[:sts_creds_instance_profile] = Config.s3_sts_creds_instance_profile
+        elsif Config.s3_iam_role_arn
+          config[:iam_role_arn] = Config.s3_iam_role_arn
         else
           config[:access_key_id] = Config.s3_access_key
           config[:secret_access_key] = Config.s3_secret_key

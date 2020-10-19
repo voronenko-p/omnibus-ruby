@@ -1,3 +1,5 @@
+Encoding.default_external = Encoding::UTF_8
+
 require "rspec"
 require "rspec/its"
 require "rspec/json_expectations"
@@ -16,6 +18,10 @@ def mac?
 end
 
 RSpec.configure do |config|
+  config.expect_with :rspec do |c|
+    c.max_formatted_output_length = 1000
+  end
+
   # Custom matchers and shared examples
   require_relative "support/examples"
   require_relative "support/matchers"
@@ -72,7 +78,7 @@ RSpec.configure do |config|
     FileUtils.mkdir_p(tmp_path)
 
     # Don't run Ohai - tests can still override this
-    stub_ohai(platform: "ubuntu", version: "12.04")
+    stub_ohai(platform: "ubuntu", version: "16.04")
 
     # Default to real HTTP requests
     WebMock.allow_net_connect!

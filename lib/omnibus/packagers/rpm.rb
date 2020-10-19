@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ module Omnibus
       preun: "preun",
       postun: "postun",
       verifyscript: "verifyscript",
-      pretans: "pretans",
+      pretrans: "pretrans",
       posttrans: "posttrans",
     }.freeze
 
@@ -302,6 +302,56 @@ module Omnibus
     expose :dist_tag
 
     #
+    # Set or return the compression type (:gzip, :bzip2, :xz) for this package
+    #
+    # @example
+    #   compression_type :xz
+    #
+    # @param [Symbol] val
+    #   the compression type
+    #
+    # @return [String]
+    #   the compression type for this package
+    #
+    def compression_type(val = NULL)
+      if null?(val)
+        @compression_type || :gzip
+      else
+        unless val.is_a?(Symbol) && %i{gzip bzip2 xz}.member?(val)
+          raise InvalidValue.new(:compression_type, "be a Symbol (:gzip, :bzip2, or :xz)")
+        end
+
+        @compression_type = val
+      end
+    end
+    expose :compression_type
+
+    #
+    # Set or return the compression level (1-9) for this package
+    #
+    # @example
+    #   compression_level 6
+    #
+    # @param [Integer] val
+    #   the compression level
+    #
+    # @return [Integer]
+    #   the compression level for this package
+    #
+    def compression_level(val = NULL)
+      if null?(val)
+        @compression_level || 9
+      else
+        unless val.is_a?(Integer) && 1 <= val && 9 >= val
+          raise InvalidValue.new(:compression_level, "be an Integer (between 1 and 9)")
+        end
+
+        @compression_level = val
+      end
+    end
+    expose :compression_level
+
+    #
     # @!endgroup
     # --------------------------------------------------
 
@@ -345,7 +395,7 @@ module Omnibus
     # @return [Array]
     #
     def filesystem_directories
-      @filesystem_directories ||= IO.readlines(resource_path("filesystem_list")).map { |f| f.chomp }
+      @filesystem_directories ||= IO.readlines(resource_path("filesystem_list")).map(&:chomp)
     end
 
     #
@@ -366,7 +416,7 @@ module Omnibus
         # return "%dir %attr(0755,root,root) #{fsdir}"
         return ""
       else
-        return "%dir #{fsdir}"
+        "%dir #{fsdir}"
       end
     end
 
@@ -399,37 +449,55 @@ module Omnibus
 
       # Get a list of all files
       files = FileSyncer.glob("#{build_dir(debug)}/**/*")
-                        .map    { |path| build_filepath(path, debug) }
-                        .reject { |path| path.empty? }
+        .map { |path| build_filepath(path, debug) }
+        .reject { |path| path.empty? }
 
       log.debug(log_key) { "These are the files going into the package(#{safe_base_package_name(debug)}): #{files}" }
 
       render_template(resource_path("spec.erb"),
-                      destination: spec_file(debug),
-                      variables: {
-                        name: safe_base_package_name(debug),
-                        version: safe_version,
-                        epoch: safe_epoch,
-                        iteration: safe_build_iteration,
-                        vendor: vendor,
-                        license: license,
-                        dist_tag: dist_tag,
-                        maintainer: project.maintainer,
-                        homepage: project.homepage,
-                        description: project.description,
-                        priority: priority,
-                        category: category,
-                        conflicts: project.conflicts,
-                        replaces: project.replaces,
-                        dependencies: pkg_dependencies,
-                        user: project.package_user,
-                        group: project.package_group,
-                        scripts: scripts,
-                        config_files: config_files,
-                        files: files,
-                        build_dir: build_dir(debug),
-                        platform_family: Ohai["platform_family"],
-                      })
+        destination: spec_file(debug),
+        variables: {
+          name: safe_base_package_name(debug),
+          version: safe_version,
+          iteration: safe_build_iteration,
+          vendor: vendor,
+          license: license,
+          dist_tag: dist_tag,
+          maintainer: project.maintainer,
+          homepage: project.homepage,
+          description: project.description,
+          priority: priority,
+          category: category,
+          conflicts: project.conflicts,
+          replaces: project.replaces,
+          dependencies: project.runtime_dependencies,
+          user: project.package_user,
+          group: project.package_group,
+          scripts: scripts,
+          config_files: config_files,
+          files: files,
+          build_dir: build_dir(debug),
+          platform_family: Ohai["platform_family"],
+          compression: compression,
+        })
+    end
+
+    #
+    # Returns the RPM spec "_binary_payload" line corresponding to the
+    # compression configuration.
+    #
+    # @return [String]
+    #
+    def compression
+      compression_name = case compression_type
+                         when :bzip2
+                           "bzdio"
+                         when :xz
+                           "xzdio"
+                         else # default to gzip
+                           "gzdio"
+                         end
+      "w#{compression_level}.#{compression_name}"
     end
 
     #
@@ -466,11 +534,11 @@ module Omnibus
           home = Dir.mktmpdir
 
           render_template(resource_path("rpmmacros.erb"),
-                          destination: "#{home}/.rpmmacros",
-                          variables: {
-                            gpg_name: key_name,
-                            gpg_path: "#{ENV['HOME']}/.gnupg", # TODO: Make this configurable
-                          })
+            destination: "#{home}/.rpmmacros",
+            variables: {
+              gpg_name: key_name,
+              gpg_path: "#{ENV["HOME"]}/.gnupg", # TODO: Make this configurable
+            })
         end
 
         command << " --sign"
@@ -539,11 +607,11 @@ module Omnibus
       destination = "#{directory}/sign-rpm"
 
       render_template(resource_path("signing.erb"),
-                      destination: destination,
-                      mode: 0700,
-                      variables: {
-                        passphrase: signing_passphrase,
-                      })
+        destination: destination,
+        mode: 0700,
+        variables: {
+          passphrase: signing_passphrase,
+        })
 
       # Yield the destination to the block
       yield(destination)

@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "thor"
+require "thor" unless defined?(Thor)
 
 module Omnibus
   class Generator < Thor::Group
@@ -73,7 +73,7 @@ module Omnibus
     class << self
       # Set the source root for Thor
       def source_root
-        File.expand_path("../generator_files", __FILE__)
+        File.expand_path("generator_files", __dir__)
       end
     end
 
@@ -90,6 +90,7 @@ module Omnibus
 
     def create_example_software_definitions
       template("config/software/zlib.rb.erb", "#{target}/config/software/#{name}-zlib.rb", template_options)
+      template("config/software/preparation.rb.erb", "#{target}/config/software/preparation.rb", template_options)
     end
 
     def create_kitchen_files

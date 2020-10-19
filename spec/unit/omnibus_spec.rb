@@ -15,10 +15,10 @@ describe Omnibus do
 
     Omnibus::Config.project_root(File.join(tmp_path, "/foo/bar"))
     Omnibus::Config.local_software_dirs([File.join(tmp_path, "/local"), File.join(tmp_path, "/other")])
-    Omnibus::Config.software_gems(["omnibus-software", "custom-omnibus-software"])
+    Omnibus::Config.software_gems(%w{omnibus-software custom-omnibus-software})
   end
 
-  describe '#which' do
+  describe "#which" do
     it "returns nil when the file does not exist" do
       stub_env("PATH", nil)
       expect(subject.which("not_a_real_executable")).to be nil
@@ -33,7 +33,7 @@ describe Omnibus do
     end
   end
 
-  describe '#project_path' do
+  describe "#project_path" do
     before do
       allow(Omnibus).to receive(:project_map)
         .and_return("chef" => "/projects/chef")
@@ -52,7 +52,7 @@ describe Omnibus do
     end
   end
 
-  describe '#software_path' do
+  describe "#software_path" do
     before do
       allow(Omnibus).to receive(:software_map)
         .and_return("chef" => "/software/chef")
@@ -71,7 +71,7 @@ describe Omnibus do
     end
   end
 
-  describe '#possible_paths_for' do
+  describe "#possible_paths_for" do
     it "searches all paths" do
       expect(subject.possible_paths_for("file")).to eq(%w{
         /foo/bar/file

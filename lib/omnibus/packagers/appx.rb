@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Chef Software, Inc.
+# Copyright 2016-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ module Omnibus
 
     # @see Base#package_name
     def package_name
-      "#{project.package_name}-#{project.build_version}-#{project.build_iteration}.appx"
+      "#{project.package_name}-#{project.build_version}-#{project.build_iteration}-#{Config.windows_arch}.appx"
     end
 
     #
@@ -62,14 +62,14 @@ module Omnibus
     #
     def write_manifest_file
       render_template(resource_path("AppxManifest.xml.erb"),
-                      destination: "#{windows_safe_path(project.install_dir)}/AppxManifest.xml",
-                      variables: {
-                        name: project.package_name,
-                        friendly_name: project.friendly_name,
-                        version: windows_package_version,
-                        maintainer: project.maintainer,
-                        certificate_subject: certificate_subject,
-                      })
+        destination: "#{windows_safe_path(project.install_dir)}/AppxManifest.xml",
+        variables: {
+          name: project.package_name,
+          friendly_name: project.friendly_name,
+          version: windows_package_version,
+          maintainer: project.maintainer,
+          certificate_subject: certificate_subject.gsub('"', "&quot;"),
+        })
     end
 
     #
@@ -79,7 +79,7 @@ module Omnibus
     # @return [String]
     #
     def pack_command(appx_file)
-      "makeappx.exe pack /d \"#{windows_safe_path(project.install_dir)}\" /p #{appx_file}"
+      "makeappx.exe pack /d \"#{windows_safe_path(project.install_dir)}\" /o /p #{appx_file}"
     end
   end
 end

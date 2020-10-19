@@ -37,14 +37,14 @@ module Omnibus
         expect(project_license).to match /This product bundles private_code 1.7.2,\nwhich is available under a "Unspecified"/
         expect(project_license).to match /This product bundles snoopy 1.0.0,\nwhich is available under a "GPL v2"/
         expect(project_license).not_to match /preparation/
-        expect(project_license).to match /LICENSES\/snoopy-artistic.html/
-        expect(project_license).to match /LICENSES\/snoopy-NOTICE/
+        expect(project_license).to match %r{LICENSES/snoopy-artistic.html}
+        expect(project_license).to match %r{LICENSES/snoopy-NOTICE}
         if zlib_version_override
           expect(project_license).to match /This product bundles zlib 1.8.0,\nwhich is available under a "Apache-2.0"/
-          expect(project_license).to match /LICENSES\/zlib-APACHE/
+          expect(project_license).to match %r{LICENSES/zlib-APACHE}
         else
           expect(project_license).to match /This product bundles zlib 1.7.2,\nwhich is available under a "Zlib"/
-          expect(project_license).to match /LICENSES\/zlib-LICENSE/
+          expect(project_license).to match %r{LICENSES/zlib-LICENSE}
         end
       end
 
@@ -155,6 +155,8 @@ module Omnibus
       softwares.each { |s| project.library.component_added(s) }
 
       Licensing.create_incrementally(project) do |licensing|
+        yield licensing if block_given?
+
         project.softwares.each do |software|
           licensing.execute_post_build(software)
         end
@@ -261,7 +263,7 @@ module Omnibus
       it "should log a warning for the missing file" do
         output = capture_logging { create_licenses }
         expect(output).to match(/Retrying failed download/)
-        expect(output).to match(/Can not download license file 'https:\/\/downloads.chef.io\/LICENSE' for software 'problematic'./)
+        expect(output).to match(%r{Can not download license file 'https://downloads.chef.io/LICENSE' for software 'problematic'.})
       end
     end
 
@@ -313,13 +315,8 @@ module Omnibus
 
       it "does not collect transitive licensing info for any software" do
         softwares.each { |s| project.library.component_added(s) }
-
-        Licensing.create_incrementally(project) do |licensing|
+        create_licenses do |licensing|
           expect(licensing).not_to receive(:collect_transitive_dependency_licenses_for)
-
-          project.softwares.each do |software|
-            licensing.execute_post_build(software)
-          end
         end
       end
     end
@@ -407,13 +404,29 @@ module Omnibus
 
       describe "when there are warnings in the licensing info" do
         before do
-          allow_any_instance_of(LicenseScout::Collector).to receive(:run)
-          allow_any_instance_of(LicenseScout::Collector).to receive(:issue_report).and_return(["This is a licensing warning!!!"])
+          allow_any_instance_of(LicenseScout::Collector).to receive(:run) do
+            FileUtils.cp_r(File.join(license_fixtures_path, "zlib"), File.join(install_dir, "license-cache/"))
+          end
+          allow_any_instance_of(LicenseScout::Reporter).to receive(:report).and_return(["This is a licensing warning!!!"])
         end
 
         it "logs the warnings" do
           output = capture_logging { create_licenses }
           expect(output).to include("This is a licensing warning!!!")
+        end
+
+        describe "when :fatal_transitive_dependency_licensing_warnings is set" do
+          before do
+            Omnibus::Config.fatal_transitive_dependency_licensing_warnings(true)
+          end
+
+          it "raises an error after post_build step" do
+            expect do
+              create_licenses do |licensing|
+                expect(licensing).not_to receive(:process_transitive_dependency_licensing_info)
+              end
+            end.to raise_error(Omnibus::LicensingError)
+          end
         end
       end
 
@@ -426,39 +439,39 @@ module Omnibus
           allow_any_instance_of(LicenseScout::Collector).to receive(:issue_report).and_return([])
         end
 
-        let(:expected_license_files) {
+        let(:expected_license_files) do
           %w{
             ruby_bundler-inifile-3.0.0-README.md
             ruby_bundler-mime-types-3.1-Licence.rdoc
             ruby_bundler-mini_portile2-2.1.0-LICENSE.txt
           }
-        }
+        end
 
-        let(:expected_license_texts) {
+        let(:expected_license_texts) do
           [
-            <<-EOH,
-This product includes inifile 3.0.0
-which is a 'ruby_bundler' dependency of 'zlib',
-and which is available under a 'MIT' License.
-For details, see:
-#{install_dir}/LICENSES/ruby_bundler-inifile-3.0.0-README.md
-EOH
-            <<-EOH,
-This product includes mime-types 3.1
-which is a 'ruby_bundler' dependency of 'zlib',
-and which is available under a 'MIT' License.
-For details, see:
-#{install_dir}/LICENSES/ruby_bundler-mime-types-3.1-Licence.rdoc
-EOH
-            <<-EOH,
-This product includes mini_portile2 2.1.0
-which is a 'ruby_bundler' dependency of 'zlib',
-and which is available under a 'MIT' License.
-For details, see:
-#{install_dir}/LICENSES/ruby_bundler-mini_portile2-2.1.0-LICENSE.txt
-EOH
+            <<~EOH,
+              This product includes inifile 3.0.0
+              which is a 'ruby_bundler' dependency of 'zlib',
+              and which is available under a 'MIT' License.
+              For details, see:
+              #{install_dir}/LICENSES/ruby_bundler-inifile-3.0.0-README.md
+            EOH
+            <<~EOH,
+              This product includes mime-types 3.1
+              which is a 'ruby_bundler' dependency of 'zlib',
+              and which is available under a 'MIT' License.
+              For details, see:
+              #{install_dir}/LICENSES/ruby_bundler-mime-types-3.1-Licence.rdoc
+            EOH
+            <<~EOH,
+              This product includes mini_portile2 2.1.0
+              which is a 'ruby_bundler' dependency of 'zlib',
+              and which is available under a 'MIT' License.
+              For details, see:
+              #{install_dir}/LICENSES/ruby_bundler-mini_portile2-2.1.0-LICENSE.txt
+            EOH
           ]
-        }
+        end
 
         it "includes transitive dependency license information in the project license information" do
           create_licenses
@@ -485,47 +498,47 @@ EOH
           allow_any_instance_of(LicenseScout::Collector).to receive(:issue_report).and_return([])
         end
 
-        let(:expected_license_files) {
+        let(:expected_license_files) do
           %w{
             ruby_bundler-inifile-3.0.0-README.md
             ruby_bundler-mime-types-3.1-Licence.rdoc
             ruby_bundler-mini_portile2-2.1.0-LICENSE.txt
           }
-        }
+        end
 
-        let(:expected_license_texts) {
+        let(:expected_license_texts) do
           [
-            <<-EOH,
-This product includes inifile 3.0.0
-which is a 'ruby_bundler' dependency of 'snoopy', 'zlib',
-and which is available under a 'MIT' License.
-For details, see:
-#{install_dir}/LICENSES/ruby_bundler-inifile-3.0.0-README.md
-EOH
-            <<-EOH,
-This product includes mime-types 3.1
-which is a 'ruby_bundler' dependency of 'zlib',
-and which is available under a 'MIT' License.
-For details, see:
-#{install_dir}/LICENSES/ruby_bundler-mime-types-3.1-Licence.rdoc
-EOH
-            <<-EOH,
-This product includes mini_portile2 2.1.0
-which is a 'ruby_bundler' dependency of 'zlib',
-and which is available under a 'MIT' License.
-For details, see:
-#{install_dir}/LICENSES/ruby_bundler-mini_portile2-2.1.0-LICENSE.txt
-EOH
-            <<-EOH,
-This product includes bundler-audit 0.5.0
-which is a 'ruby_bundler' dependency of 'snoopy',
-and which is available under a 'GPLv3' License.
-For details, see:
-#{install_dir}/LICENSES/ruby_bundler-bundler-audit-0.5.0-COPYING.txt
-EOH
+            <<~EOH,
+              This product includes inifile 3.0.0
+              which is a 'ruby_bundler' dependency of 'snoopy', 'zlib',
+              and which is available under a 'MIT' License.
+              For details, see:
+              #{install_dir}/LICENSES/ruby_bundler-inifile-3.0.0-README.md
+            EOH
+            <<~EOH,
+              This product includes mime-types 3.1
+              which is a 'ruby_bundler' dependency of 'zlib',
+              and which is available under a 'MIT' License.
+              For details, see:
+              #{install_dir}/LICENSES/ruby_bundler-mime-types-3.1-Licence.rdoc
+            EOH
+            <<~EOH,
+              This product includes mini_portile2 2.1.0
+              which is a 'ruby_bundler' dependency of 'zlib',
+              and which is available under a 'MIT' License.
+              For details, see:
+              #{install_dir}/LICENSES/ruby_bundler-mini_portile2-2.1.0-LICENSE.txt
+            EOH
+            <<~EOH,
+              This product includes bundler-audit 0.5.0
+              which is a 'ruby_bundler' dependency of 'snoopy',
+              and which is available under a 'GPLv3' License.
+              For details, see:
+              #{install_dir}/LICENSES/ruby_bundler-bundler-audit-0.5.0-COPYING.txt
+            EOH
 
           ]
-        }
+        end
 
         it "includes merged licensing information from multiple software definitions" do
           create_licenses

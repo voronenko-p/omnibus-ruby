@@ -9,8 +9,7 @@ module Omnibus
         path: "/path/to/files/chef.deb",
         name: "chef.deb",
         content: "BINARY",
-        validate!: true
-      )
+        validate!: true)
     end
 
     let(:metadata) do
@@ -24,8 +23,7 @@ module Omnibus
         platform_version: "14.04",
         arch: "x86_64",
         sha1: "SHA1",
-        md5: "ABCDEF123456"
-      )
+        md5: "ABCDEF123456")
     end
 
     let(:packages) { [package] }
@@ -40,7 +38,7 @@ module Omnibus
 
     subject { described_class.new(path) }
 
-    describe '#publish' do
+    describe "#publish" do
       before { allow(subject).to receive(:packages).and_return(packages) }
 
       it "validates the package" do
@@ -91,6 +89,23 @@ module Omnibus
         it "sets the access control to private" do
           expect(subject).to receive(:store_object).with(
             "ubuntu/14.04/x86_64/chef.deb/chef.deb.metadata.json",
+            FFI_Yajl::Encoder.encode(package.metadata.to_hash, pretty: true),
+            nil,
+            "private"
+          ).once
+
+          subject.publish
+        end
+      end
+
+      context "when the custom s3_publish_pattern is set" do
+        before do
+          Config.s3_publish_pattern("custom_prefix/%{name}/%{version}/%{platform}/%{platform_version}")
+        end
+
+        it "uploads the package to the provided path" do
+          expect(subject).to receive(:store_object).with(
+            "custom_prefix/chef/11.0.6/ubuntu/14.04/chef.deb.metadata.json",
             FFI_Yajl::Encoder.encode(package.metadata.to_hash, pretty: true),
             nil,
             "private"

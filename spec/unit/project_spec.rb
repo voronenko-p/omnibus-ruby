@@ -87,7 +87,7 @@ module Omnibus
       end
     end
 
-    describe '#install_dir' do
+    describe "#install_dir" do
       it "removes duplicate slashes" do
         subject.install_dir("///opt//chef")
         expect(subject.install_dir).to eq("/opt/chef")
@@ -108,9 +108,9 @@ module Omnibus
       end
     end
 
-    describe '#default_root' do
+    describe "#default_root" do
       context "on Windows" do
-        before { stub_ohai(platform: "windows", version: "2012") }
+        before { stub_ohai(platform: "windows", version: "2012R2") }
 
         it "returns C:/" do
           expect(subject.default_root).to eq("C:")
@@ -118,7 +118,7 @@ module Omnibus
       end
 
       context "on non-Windows" do
-        before { stub_ohai(platform: "ubuntu", version: "12.04") }
+        before { stub_ohai(platform: "ubuntu", version: "16.04") }
 
         it "returns /opt" do
           expect(subject.default_root).to eq("/opt")
@@ -145,19 +145,19 @@ module Omnibus
       end
     end
 
-    describe '#license' do
+    describe "#license" do
       it "sets the default to Unspecified" do
         expect(subject.license).to eq ("Unspecified")
       end
     end
 
-    describe '#license_file_path' do
+    describe "#license_file_path" do
       it "sets the default to LICENSE" do
         expect(subject.license_file_path).to eq ("/sample/LICENSE")
       end
     end
 
-    describe '#dirty!' do
+    describe "#dirty!" do
       let(:software) { double(Omnibus::Software) }
 
       it "dirties the cache" do
@@ -173,7 +173,7 @@ module Omnibus
       end
     end
 
-    describe '#dirty?' do
+    describe "#dirty?" do
       it "returns true by default" do
         subject.instance_variable_set(:@culprit, nil)
         expect(subject).to_not be_dirty
@@ -190,7 +190,7 @@ module Omnibus
       end
     end
 
-    describe '#<=>' do
+    describe "#<=>" do
       let(:chefdk) { described_class.new.tap { |p| p.name("chefdk") } }
       let(:chef)   { described_class.new.tap { |p| p.name("chef") } }
       let(:ruby)   { described_class.new.tap { |p| p.name("ruby") } }
@@ -201,27 +201,27 @@ module Omnibus
       end
     end
 
-    describe '#build_iteration' do
-      let(:fauxhai_options) { Hash.new }
+    describe "#build_iteration" do
+      let(:fauxhai_options) { {} }
 
       before { stub_ohai(fauxhai_options) }
 
       context "when on RHEL" do
-        let(:fauxhai_options) { { platform: "redhat", version: "6.4" } }
+        let(:fauxhai_options) { { platform: "redhat", version: "6.9" } }
         it "returns a RHEL iteration" do
           expect(subject.build_iteration).to eq(1)
         end
       end
 
       context "when on Debian" do
-        let(:fauxhai_options) { { platform: "debian", version: "7.2" } }
+        let(:fauxhai_options) { { platform: "debian", version: "8.11" } }
         it "returns a Debian iteration" do
           expect(subject.build_iteration).to eq(1)
         end
       end
 
       context "when on FreeBSD" do
-        let(:fauxhai_options) { { platform: "freebsd", version: "9.1" } }
+        let(:fauxhai_options) { { platform: "freebsd", version: "10.4" } }
         it "returns a FreeBSD iteration" do
           expect(subject.build_iteration).to eq(1)
         end
@@ -236,27 +236,27 @@ module Omnibus
       end
 
       context "when on OS X" do
-        let(:fauxhai_options) { { platform: "mac_os_x", version: "10.8.2" } }
+        let(:fauxhai_options) { { platform: "mac_os_x", version: "10.13" } }
         it "returns a generic iteration" do
           expect(subject.build_iteration).to eq(1)
         end
       end
     end
 
-    describe '#overrides' do
+    describe "#overrides" do
       before { subject.overrides.clear }
 
-      it 'sets all the things through #overrides' do
+      it "sets all the things through #overrides" do
         subject.override(:thing, version: "6.6.6")
         expect(subject.override(:zlib)).to be_nil
       end
 
-      it 'retrieves the things set through #overrides' do
+      it "retrieves the things set through #overrides" do
         subject.override(:thing, version: "6.6.6")
         expect(subject.override(:thing)[:version]).to eq("6.6.6")
       end
 
-      it 'symbolizes #overrides' do
+      it "symbolizes #overrides" do
         subject.override("thing", version: "6.6.6")
         [:thing, "thing"].each do |thing|
           expect(subject.override(thing)).not_to be_nil
@@ -265,8 +265,8 @@ module Omnibus
       end
     end
 
-    describe '#ohai' do
-      before { stub_ohai(platform: "ubuntu", version: "12.04") }
+    describe "#ohai" do
+      before { stub_ohai(platform: "ubuntu", version: "16.04") }
 
       it "is a DSL method" do
         expect(subject).to have_exposed_method(:ohai)
@@ -277,21 +277,21 @@ module Omnibus
       end
     end
 
-    describe '#packagers_for_system' do
+    describe "#packagers_for_system" do
       it "returns array of packager objects" do
         subject.packagers_for_system.each do |packager|
           expect(packager).to be_a(Packager::Base)
         end
       end
 
-      it 'calls Packager#for_current_system' do
+      it "calls Packager#for_current_system" do
         expect(Packager).to receive(:for_current_system)
           .and_call_original
         subject.packagers_for_system
       end
     end
 
-    describe '#package' do
+    describe "#package" do
       it "raises an exception when a block is not given" do
         expect { subject.package(:foo) }.to raise_error(InvalidValue)
       end
@@ -312,7 +312,7 @@ module Omnibus
       end
     end
 
-    describe '#packagers' do
+    describe "#packagers" do
       it "returns a Hash" do
         expect(subject.packagers).to be_a(Hash)
       end
@@ -323,12 +323,12 @@ module Omnibus
       end
     end
 
-    describe '#compressor' do
+    describe "#compressor" do
       it "returns a compressor object" do
         expect(subject.compressor).to be_a(Compressor::Base)
       end
 
-      it 'calls Compressor#for_current_system' do
+      it "calls Compressor#for_current_system" do
         expect(Compressor).to receive(:for_current_system)
           .and_call_original
 
@@ -340,14 +340,14 @@ module Omnibus
         subject.compress(:tgz)
 
         expect(Compressor).to receive(:for_current_system)
-          .with([:dmg, :tgz])
+          .with(%i{dmg tgz})
           .and_call_original
 
         subject.compressor
       end
     end
 
-    describe '#compress' do
+    describe "#compress" do
       it "does not raises an exception when a block is not given" do
         expect { subject.compress(:foo) }.to_not raise_error
       end
@@ -373,7 +373,7 @@ module Omnibus
       end
     end
 
-    describe '#compressors' do
+    describe "#compressors" do
       it "returns a Hash" do
         expect(subject.compressors).to be_a(Hash)
       end
@@ -384,7 +384,7 @@ module Omnibus
       end
     end
 
-    describe '#shasum' do
+    describe "#shasum" do
       context "when a filepath is given" do
         let(:path) { "/project.rb" }
         let(:file) { double(File) }
@@ -410,6 +410,37 @@ module Omnibus
 
         it "returns the correct shasum" do
           expect(subject.shasum).to eq("3cc6bd98da4d643b79c71be2c93761a458b442e2931f7d421636f526d0c1e8bf")
+        end
+      end
+    end
+
+    describe "#restore_complete_build" do
+      let(:cached_build) { double(GitCache) }
+      let(:first_software) { double(Omnibus::Software) }
+      let(:last_software) { double(Omnibus::Software) }
+
+      before do
+        allow(Config).to receive(:use_git_caching).and_return(git_caching)
+      end
+
+      context "when git caching is enabled" do
+        let(:git_caching) { true }
+
+        it "restores the last software built" do
+          expect(subject).to receive(:softwares).and_return([first_software, last_software])
+          expect(GitCache).to receive(:new).with(last_software).and_return(cached_build)
+          expect(cached_build).to receive(:restore_from_cache)
+          subject.restore_complete_build
+        end
+      end
+
+      context "when git caching is disabled" do
+        let(:git_caching) { false }
+
+        it "does nothing" do
+          expect(subject).not_to receive(:softwares)
+          expect(GitCache).not_to receive(:new)
+          subject.restore_complete_build
         end
       end
     end

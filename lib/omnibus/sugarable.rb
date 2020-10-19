@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ require "chef/sugar/architecture"
 require "chef/sugar/cloud"
 require "chef/sugar/constraints"
 require "chef/sugar/ip"
+require "chef/sugar/init"
 require "chef/sugar/platform"
 require "chef/sugar/platform_family"
 require "chef/sugar/ruby"
@@ -65,6 +66,10 @@ module Omnibus
     # If this returns false, the target is x64. Itanium is not supported.
     def windows_arch_i386?
       Config.windows_arch.to_sym == :x86
+    end
+
+    def fips_mode?
+      !!Config.fips_mode
     end
   end
 end

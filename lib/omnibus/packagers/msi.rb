@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "pathname"
+require "pathname" unless defined?(Pathname)
 require "omnibus/packagers/windows_base"
 require "fileutils"
 
@@ -255,6 +255,31 @@ module Omnibus
     expose :wix_light_extension
 
     #
+    # Signal delay validation for wix light
+    #
+    # @example
+    #   wix_light_deplay_validation true
+    #
+    # @param [TrueClass, FalseClass] value
+    #   whether to delay validation or not
+    #
+    # @return [String]
+    #   whether we're a bundle or not
+    def wix_light_delay_validation(val = false)
+      unless val.is_a?(TrueClass) || val.is_a?(FalseClass)
+        raise InvalidValue.new(:iwix_light_delay_validation, "be TrueClass or FalseClass")
+      end
+
+      @delay_validation ||= val
+      unless @delay_validation
+        return ""
+      end
+
+      "-sval"
+    end
+    expose :wix_light_delay_validation
+
+    #
     # Set the wix candle extensions to load
     #
     # @example
@@ -336,6 +361,29 @@ module Omnibus
     expose :fast_msi
 
     #
+    # Set or retrieve the localization. Take a look at
+    # this list[https://www.firegiant.com/wix/tutorial/user-interface/do-you-speak-english/]
+    # of valid localizations.
+    #
+    # @example
+    #   localization 'de-de'
+    #
+    # @param [String] val
+    #   the localization to set
+    #
+    # @return [String]
+    #   the set localization
+    #
+    def localization(val = "en-us")
+      unless val.is_a?(String)
+        raise InvalidValue.new(:localization, "be a String")
+      end
+
+      @localization ||= val
+    end
+    expose :localization
+
+    #
     # Discovers a path to a gem/file included in a gem under the install directory.
     #
     # @example
@@ -399,13 +447,13 @@ module Omnibus
     # @return [void]
     #
     def write_localization_file
-      render_template(resource_path("localization-en-us.wxl.erb"),
-                      destination: "#{staging_dir}/localization-en-us.wxl",
-                      variables: {
-                        name: project.package_name,
-                        friendly_name: project.friendly_name,
-                        maintainer: project.maintainer,
-                      })
+      render_template(resource_path("localization-#{localization}.wxl.erb"),
+        destination: "#{staging_dir}/localization-#{localization}.wxl",
+        variables: {
+          name: project.package_name,
+          friendly_name: project.friendly_name,
+          maintainer: project.maintainer,
+        })
     end
 
     #
@@ -415,16 +463,16 @@ module Omnibus
     #
     def write_parameters_file
       render_template(resource_path("parameters.wxi.erb"),
-                      destination: "#{staging_dir}/parameters.wxi",
-                      variables: {
-                        name: project.package_name,
-                        friendly_name: project.friendly_name,
-                        maintainer: project.maintainer,
-                        upgrade_code: upgrade_code,
-                        parameters: parameters,
-                        version: windows_package_version,
-                        display_version: msi_display_version,
-                      })
+        destination: "#{staging_dir}/parameters.wxi",
+        variables: {
+          name: project.package_name,
+          friendly_name: project.friendly_name,
+          maintainer: project.maintainer,
+          upgrade_code: upgrade_code,
+          parameters: parameters,
+          version: windows_package_version,
+          display_version: msi_display_version,
+        })
     end
 
     #
@@ -463,15 +511,15 @@ module Omnibus
                         end
 
       render_template(resource_path("source.wxs.erb"),
-                      destination: "#{staging_dir}/source.wxs",
-                      variables: {
-                        name: project.package_name,
-                        friendly_name: project.friendly_name,
-                        maintainer: project.maintainer,
-                        hierarchy: hierarchy,
-                        fastmsi: fast_msi,
-                        wix_install_dir: wix_install_dir,
-                      })
+        destination: "#{staging_dir}/source.wxs",
+        variables: {
+          name: project.package_name,
+          friendly_name: project.friendly_name,
+          maintainer: project.maintainer,
+          hierarchy: hierarchy,
+          fastmsi: fast_msi,
+          wix_install_dir: wix_install_dir,
+        })
     end
 
     #
@@ -481,17 +529,17 @@ module Omnibus
     #
     def write_bundle_file
       render_template(resource_path("bundle.wxs.erb"),
-                      destination: "#{staging_dir}/bundle.wxs",
-                      variables: {
-                        name: project.package_name,
-                        friendly_name: project.friendly_name,
-                        maintainer: project.maintainer,
-                        upgrade_code: upgrade_code,
-                        parameters: parameters,
-                        version: windows_package_version,
-                        display_version: msi_display_version,
-                        msi: windows_safe_path(Config.package_dir, msi_name),
-                      })
+        destination: "#{staging_dir}/bundle.wxs",
+        variables: {
+          name: project.package_name,
+          friendly_name: project.friendly_name,
+          maintainer: project.maintainer,
+          upgrade_code: upgrade_code,
+          parameters: parameters,
+          version: windows_package_version,
+          display_version: msi_display_version,
+          msi: windows_safe_path(Config.package_dir, msi_name),
+        })
     end
 
     #
@@ -501,17 +549,17 @@ module Omnibus
     #
     def write_bundle_theme_file
       render_template(resource_path("bundle_theme.xml.erb"),
-                      destination: "#{staging_dir}/bundle_theme.xml",
-                      variables: {
-                        name: project.package_name,
-                        friendly_name: project.friendly_name,
-                        maintainer: project.maintainer,
-                        upgrade_code: upgrade_code,
-                        parameters: parameters,
-                        version: windows_package_version,
-                        display_version: msi_display_version,
-                        msi: windows_safe_path(Config.package_dir, msi_name),
-                      })
+        destination: "#{staging_dir}/bundle_theme.xml",
+        variables: {
+          name: project.package_name,
+          friendly_name: project.friendly_name,
+          maintainer: project.maintainer,
+          upgrade_code: upgrade_code,
+          parameters: parameters,
+          version: windows_package_version,
+          display_version: msi_display_version,
+          msi: windows_safe_path(Config.package_dir, msi_name),
+        })
     end
 
     #
@@ -596,11 +644,12 @@ module Omnibus
         <<-EOH.split.join(" ").squeeze(" ").strip
         light.exe
           -nologo
+          #{wix_light_delay_validation}
           -ext WixUIExtension
           -ext WixBalExtension
           #{wix_extension_switches(wix_light_extensions)}
-          -cultures:en-us
-          -loc "#{windows_safe_path(staging_dir, 'localization-en-us.wxl')}"
+          -cultures:#{localization}
+          -loc "#{windows_safe_path(staging_dir, "localization-#{localization}.wxl")}"
           bundle.wixobj
           -out "#{out_file}"
         EOH
@@ -608,10 +657,11 @@ module Omnibus
         <<-EOH.split.join(" ").squeeze(" ").strip
           light.exe
             -nologo
+            #{wix_light_delay_validation}
             -ext WixUIExtension
             #{wix_extension_switches(wix_light_extensions)}
-            -cultures:en-us
-            -loc "#{windows_safe_path(staging_dir, 'localization-en-us.wxl')}"
+            -cultures:#{localization}
+            -loc "#{windows_safe_path(staging_dir, "localization-#{localization}.wxl")}"
             project-files.wixobj #{wixobj_list} source.wixobj
             -out "#{out_file}"
         EOH
@@ -671,7 +721,7 @@ module Omnibus
     # @return [String]
     #
     def wix_extension_switches(arr)
-      "#{arr.map { |e| "-ext '#{e}'" }.join(' ')}"
+      "#{arr.map { |e| "-ext '#{e}'" }.join(" ")}"
     end
   end
 end

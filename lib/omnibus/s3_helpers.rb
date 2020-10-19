@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Chef Software, Inc.
+# Copyright 2015-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-require "aws-sdk"
+require "aws-sdk-s3"
 require "aws-sdk-core/credentials"
 require "aws-sdk-core/shared_credentials"
-require "base64"
+require "base64" unless defined?(Base64)
 
 module Omnibus
   module S3Helpers
@@ -89,6 +89,7 @@ module Omnibus
       end
 
       #
+<<<<<<< HEAD
       # Create credentials object based on credential profile or access key
       # parameters for use by the client object.
       #
@@ -114,8 +115,13 @@ module Omnibus
           Aws::ECSCredentials.new()
         elsif s3_configuration[:instance_profile] || (sts_client_credentials && s3_configuration[:sts_creds_instance_profile])
           Aws::InstanceProfileCredentials.new()
+        elsif s3_configuration[:iam_role_arn]
+          Aws::AssumeRoleCredentials.new(role_arn: s3_configuration[:iam_role_arn], role_session_name: "omnibus-assume-role-s3-access")
         elsif s3_configuration[:access_key_id] && s3_configuration[:secret_access_key]
           Aws::Credentials.new(s3_configuration[:access_key_id], s3_configuration[:secret_access_key])
+        else
+          # No credentials specified, only public data will be retrievable
+          Aws::Credentials.new(nil, nil)
         end
       end
 
@@ -149,16 +155,24 @@ module Omnibus
       # @param [String] content_md5
       # @param [String] acl
       #
-      # @return [true]
+      # @return [Aws::S3::Object]
       #
       def store_object(key, content, content_md5, acl)
         bucket.put_object({
+<<<<<<< HEAD
                             key: key,
                             body: content,
                             content_md5: to_base64_digest(content_md5),
                             acl: acl,
                           })
         true
+=======
+          key: key,
+          body: content,
+          content_md5: to_base64_digest(content_md5),
+          acl: acl,
+        })
+>>>>>>> upstream/master
       end
 
       #

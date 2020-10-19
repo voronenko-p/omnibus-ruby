@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2019, Chef Software Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-require "fileutils"
-require "mixlib/shellout"
-require "ostruct"
-require "pathname"
-require "httparty"
+require "fileutils" unless defined?(FileUtils)
+require "mixlib/shellout" unless defined?(Mixlib::ShellOut)
+require "ostruct" unless defined?(OpenStruct)
+require "pathname" unless defined?(Pathname)
+require "omnibus/whitelist"
 
 module Omnibus
   class Builder
@@ -311,6 +311,21 @@ module Omnibus
     expose :windows_safe_path
 
     #
+    # (see Util#compiler_safe_path)
+    #
+    # Some compilers require paths to be formatted in certain ways. This helper
+    # takes in the standard Omnibus-style path and ensures that it is passed
+    # correctly.
+    #
+    # @example
+    #   configure ["--prefix=#{compiler_safe_path(install_dir, "embedded")}"]
+    #
+    def compiler_safe_path(*pieces)
+      super
+    end
+    expose :compiler_safe_path
+
+    #
     # @!endgroup
     # --------------------------------------------------
 
@@ -391,19 +406,41 @@ module Omnibus
     # @param (see #command)
     # @return (see #command)
     #
-    def appbundle(software_name, options = {})
+    def appbundle(software_name, lockdir: nil, gem: nil, without: nil, extra_bin_files: nil , **options)
       build_commands << BuildCommand.new("appbundle `#{software_name}'") do
-        app_software = project.softwares.find do |p|
-          p.name == software_name
-        end
-
         bin_dir            = "#{install_dir}/bin"
         appbundler_bin     = embedded_bin("appbundler")
+
+        lockdir ||=
+          begin
+            app_software = project.softwares.find do |p|
+              p.name == software_name
+            end
+            if app_software.nil?
+              raise "could not find software definition for #{software_name}, add a dependency to it, or pass a lockdir argument to appbundle command."
+            end
+
+            app_software.project_dir
+          end
+
+        command = [ appbundler_bin, "'#{lockdir}'", "'#{bin_dir}'" ]
+
+        # This option is almost entirely for support of ChefDK and enables transitive gemfile lock construction in order
+        # to be able to decouple the dev gems for all the different components of ChefDK.  AKA:  don't use it outside of
+        # ChefDK.  You should also explicitly specify the lockdir when going down this road.
+        command << [ "'#{gem}'" ] if gem
+
+        # FIXME: appbundler lacks support for this argument when not also specifying the gem (2-arg appbundling lacks support)
+        # (if you really need this bug fixed, though, fix it in appbundler, don't try using the 3-arg version to try to
+        # get `--without` support, you will likely wind up going down a sad path).
+        command << [ "--without", without.join(",") ] unless without.nil?
+
+        command << [ "--extra-bin-files", extra_bin_files.join(",") ] unless extra_bin_files.nil? || extra_bin_files.empty?
 
         # Ensure the main bin dir exists
         FileUtils.mkdir_p(bin_dir)
 
-        shellout!("#{appbundler_bin} '#{app_software.project_dir}' '#{bin_dir}'", options)
+        shellout!(command.join(" "), options)
       end
     end
     expose :appbundle
@@ -496,9 +533,9 @@ module Omnibus
 
       block "Render erb `#{source}'" do
         render_template(source_path,
-                        destination: dest,
-                        mode: mode,
-                        variables: vars)
+          destination: dest,
+          mode:        mode,
+          variables:   vars)
       end
     end
     expose :erb
@@ -582,6 +619,29 @@ module Omnibus
     expose :delete
 
     #
+    # Strip symbols from the given file or directory on the system. This method uses
+    # find and passes the matched files to strip through xargs, ignoring errors.
+    # So one may pass in a specific file/directory or a glob of files.
+    #
+    # @param [String] path
+    #   the path of the file(s) to strip
+    #
+    # @return (see #command)
+    #
+    def strip(path)
+      regexp_ends = ".*(" + IGNORED_ENDINGS.map { |e| e.gsub(/\./, '\.') }.join("|") + ")$"
+      regexp_patterns = IGNORED_PATTERNS.map { |e| ".*" + e.gsub(%r{/}, '\/') + ".*" }.join("|")
+      regexp = regexp_ends + "|" + regexp_patterns
+
+      # Do not actually care if strip runs on non-strippable file, as its a no-op.  Hence the `|| true` appended.
+      # Do want to avoid stripping files unneccessarily so as not to slow down build process.
+      find_command = "find #{path}/ -type f -regextype posix-extended ! -regex \"#{regexp}\" | xargs strip || true"
+      options = { in_msys_bash: true }
+      command(find_command, options)
+    end
+    expose :strip
+
+    #
     # Copy the given source to the destination. This method accepts a single
     # file or a file pattern to match.
     #
@@ -651,11 +711,15 @@ module Omnibus
       command = "link `#{source}' to `#{destination}'"
       build_commands << BuildCommand.new(command) do
         Dir.chdir(software.project_dir) do
-          files = FileSyncer.glob(source)
-          raise "no matched files for glob #{command}" if files.empty? && !options[:force]
+          if options.delete(:unchecked)
+            FileUtils.ln_s(source, destination, options)
+          else
+            files = FileSyncer.glob(source)
+            raise "no matched files for glob #{command}" if files.empty? && !options[:force]
 
-          files.each do |file|
-            FileUtils.ln_s(file, destination, options)
+            files.each do |file|
+              FileUtils.ln_s(file, destination, options)
+            end
           end
         end
       end
@@ -691,7 +755,7 @@ module Omnibus
     #       config.guess.to. Default: "."
     #     install [Array<Symbol>] parts of config.guess to copy.
     #       Default: [:config_guess, :config_sub]
-    def update_config_guess(target: ".", install: [:config_guess, :config_sub])
+    def update_config_guess(target: ".", install: %i{config_guess config_sub})
       build_commands << BuildCommand.new("update_config_guess `target: #{target} install: #{install.inspect}'") do
         config_guess_dir = "/tmp/build/embedded/lib/config_guess"
         %w{config.guess config.sub}.each do |c|
@@ -731,7 +795,7 @@ module Omnibus
       log.internal(log_key) { "Cached builder checksum before build: #{shasum}" }
       if software.overridden?
         log.info(log_key) do
-          "Version overridden from #{software.default_version} to "\
+          "Version overridden from #{software.default_version || "n/a"} to "\
           "#{software.version}"
         end
       end
@@ -880,14 +944,6 @@ module Omnibus
       # Also make a clone of options so that we can mangle it safely below.
       options = { cwd: software.project_dir }.merge(options)
 
-      if options.delete(:in_msys_bash) && windows?
-        # Mixlib will handle escaping characters for cmd but our command might
-        # contain '. For now, assume that won't happen because I don't know
-        # whether this command is going to be played via cmd or through
-        # ProcessCreate.
-        command_string = "bash -c \'#{command_string}\'"
-      end
-
       # Set the log level to :info so users will see build commands
       options[:log_level] ||= :info
 
@@ -950,7 +1006,7 @@ module Omnibus
         if tries <= 0
           raise e
         else
-          delay = delay * 2
+          delay *= 2
 
           log.warn(log_key) do
             label = "#{(Config.build_retries - tries) + 1}/#{Config.build_retries}"
@@ -991,6 +1047,7 @@ module Omnibus
       original = ENV.to_hash
 
       ENV.delete("_ORIGINAL_GEM_PATH")
+      ENV.delete_if { |k, _| k.start_with?("BUNDLER_") }
       ENV.delete_if { |k, _| k.start_with?("BUNDLE_") }
       ENV.delete_if { |k, _| k.start_with?("GEM_") }
       ENV.delete_if { |k, _| k.start_with?("RUBY") }

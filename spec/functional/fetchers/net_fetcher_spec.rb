@@ -4,15 +4,14 @@ module Omnibus
   module RSpec
     module OhaiHelpers
       # Turn off the mandatory Ohai helper.
-      def stub_ohai(options = {}, &block)
-      end
+      def stub_ohai(options = {}, &block); end
     end
   end
 
   describe NetFetcher do
     include_examples "a software", "zlib"
 
-    let(:source_url) { "http://downloads.sourceforge.net/project/libpng/zlib/1.2.8/zlib-1.2.8.tar.gz" }
+    let(:source_url) { "http://chef-releng.s3.amazonaws.com/omnibus/integration_test/zlib-1.2.8.tar.gz" }
     let(:source_md5) { "44d667c142d7cda120332623eab69f40" }
     let(:source_sha1) { "a4d316c404ff54ca545ea71a27af7dbc29817088" }
     let(:source_sha256) { "36658cb768a54c1d4dec43c3116c27ed893e88b02ecfcb44f2166f9c0b7f2a0d" }
@@ -29,15 +28,15 @@ module Omnibus
 
     let(:manifest_entry) do
       double(ManifestEntry,
-             name: "software",
-             locked_version: "1.2.8",
-             described_version: "1.2.8",
-             locked_source: source)
+        name: "software",
+        locked_version: "1.2.8",
+        described_version: "1.2.8",
+        locked_source: source)
     end
 
     subject { described_class.new(manifest_entry, project_dir, build_dir) }
 
-    describe '#fetch_required?' do
+    describe "#fetch_required?" do
       context "when the file is not downloaded" do
         it "return true" do
           expect(subject.fetch_required?).to be_truthy
@@ -62,7 +61,7 @@ module Omnibus
       end
     end
 
-    describe '#version_guid' do
+    describe "#version_guid" do
       context "source with md5" do
         it "includes the md5 digest" do
           expect(subject.version_guid).to eq("md5:#{source_md5}")
@@ -100,7 +99,7 @@ module Omnibus
       end
     end
 
-    describe '#clean' do
+    describe "#clean" do
       before { fetch! }
 
       context "when the project directory exists" do
@@ -157,7 +156,7 @@ module Omnibus
       end
     end
 
-    describe '#fetch' do
+    describe "#fetch" do
       context "source with md5" do
         it "downloads the file" do
           fetch!
@@ -243,7 +242,7 @@ module Omnibus
       it "when the download times out" do
         # Mock the Timeout::Error for this particular test only
         WebMock.disable_net_connect!
-        stub_request(:get, "http://downloads.sourceforge.net/project/libpng/zlib/1.2.8/zlib-1.2.8.tar.gz").to_timeout
+        stub_request(:get, "http://chef-releng.s3.amazonaws.com/omnibus/integration_test/zlib-1.2.8.tar.gz").to_timeout
         output = capture_logging do
           expect { subject.send(:download) }.to raise_error(Timeout::Error)
         end
@@ -265,7 +264,7 @@ module Omnibus
       end
     end
 
-    describe '#version_for_cache' do
+    describe "#version_for_cache" do
       before do
         create_file("#{project_dir}/file_a")
         create_file("#{project_dir}/file_b")

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Chef Software, Inc.
+# Copyright 2015-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "open-uri"
+require "open-uri" unless defined?(OpenURI)
 require "ruby-progressbar"
 
 module Omnibus
@@ -67,17 +67,21 @@ module Omnibus
             rate_scale: ->(rate) { rate / 1024 }
           )
 
-          options[:content_length_proc] = ->(total) {
+          options[:content_length_proc] = ->(total) do
             reported_total = total
             progress_bar.total = total
-          }
-          options[:progress_proc] = ->(step) {
+          end
+          options[:progress_proc] = ->(step) do
             downloaded_amount = reported_total ? [step, reported_total].min : step
             progress_bar.progress = downloaded_amount
-          }
+          end
         end
 
-        file = open(from_url, options)
+        if RUBY_VERSION.to_f < 2.7
+          file = open(from_url, options)
+        else
+          file = URI.open(from_url, options)
+        end
         # This is a temporary file. Close and flush it before attempting to copy
         # it over.
         file.close

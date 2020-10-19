@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,10 +49,10 @@ module Omnibus
       end
 
       if compressors.include?(:tgz)
-        return TGZ
+        TGZ
       else
         log.info(log_key) { "No compressor defined for `#{family}'." }
-        return Null
+        Null
       end
     end
     module_function :for_current_system

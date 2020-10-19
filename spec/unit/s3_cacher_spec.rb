@@ -7,9 +7,7 @@ module Omnibus
         name: "ruby",
         version: "1.9.3",
         fetcher: double(Fetcher,
-          checksum: "abcd1234"
-        )
-      )
+          checksum: "abcd1234"))
     end
 
     let(:python_27) do
@@ -17,9 +15,7 @@ module Omnibus
         name: "python",
         version: "2.7",
         fetcher: double(Fetcher,
-          checksum: "defg5678"
-        )
-      )
+          checksum: "defg5678"))
     end
 
     describe ".list" do
@@ -104,6 +100,70 @@ module Omnibus
 
       it "returns the correct string" do
         expect(S3Cache.key_for(ruby_19)).to eq("ruby-1.9.3-abcd1234")
+      end
+    end
+
+    describe ".s3_configuration" do
+      let (:s3_bucket) { "omnibus-cache" }
+      let (:s3_region) { "eu-west-1" }
+      let (:s3_access_key) { nil }
+      let (:s3_secret_key) { nil }
+      let (:s3_profile) { nil }
+      let (:s3_iam_role_arn) { nil }
+
+      before do
+        Config.s3_bucket s3_bucket
+        Config.s3_region s3_region
+        Config.s3_iam_role_arn s3_iam_role_arn
+        Config.s3_profile s3_profile
+        Config.s3_access_key s3_access_key
+        Config.s3_secret_key s3_secret_key
+      end
+
+      it "sets region and bucket" do
+        config = S3Cache.send(:s3_configuration)
+        expect(config[:region]).to eq(s3_region)
+        expect(config[:bucket_name]).to eq(s3_bucket)
+      end
+
+      context "s3_profile is not configured" do
+        let(:s3_access_key) { "ACCESS_KEY_ID" }
+        let(:s3_secret_key) { "SECRET_ACCESS_KEY" }
+
+        it "sets access_key_id and secret_access_key" do
+          config = S3Cache.send(:s3_configuration)
+          expect(config[:profile]).to eq(nil)
+          expect(config[:access_key_id]).to eq(s3_access_key)
+          expect(config[:secret_access_key]).to eq(s3_secret_key)
+        end
+      end
+
+      context "s3_profile is configured" do
+        let(:s3_profile) { "SHAREDPROFILE" }
+        let(:s3_access_key) { "ACCESS_KEY_ID" }
+        let(:s3_secret_key) { "SECRET_ACCESS_KEY" }
+
+        it "sets s3_profile only" do
+          config = S3Cache.send(:s3_configuration)
+          expect(config[:profile]).to eq(s3_profile)
+          expect(config[:access_key_id]).to eq(nil)
+          expect(config[:secret_access_key]).to eq(nil)
+        end
+      end
+
+      context "s3_iam_role_arn is configured" do
+        let(:s3_iam_role_arn) { "S3_IAM_ROLE_ARN" }
+        let(:s3_profile) { "SHAREDPROFILE" }
+        let(:s3_access_key) { "ACCESS_KEY_ID" }
+        let(:s3_secret_key) { "SECRET_ACCESS_KEY" }
+
+        it "sets s3_iam_role_arn only" do
+          config = S3Cache.send(:s3_configuration)
+          expect(config[:iam_role_arn]).to eq(s3_iam_role_arn)
+          expect(config[:profile]).to eq(nil)
+          expect(config[:access_key_id]).to eq(nil)
+          expect(config[:secret_access_key]).to eq(nil)
+        end
       end
     end
   end

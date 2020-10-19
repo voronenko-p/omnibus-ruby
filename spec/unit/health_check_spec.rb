@@ -8,9 +8,7 @@ module Omnibus
         name: "chefdk",
         install_dir: "/opt/chefdk",
         library: double(Library,
-          components: []
-        )
-      )
+          components: []))
     end
 
     def mkdump(base, size, x64 = false)
@@ -19,9 +17,7 @@ module Omnibus
         x64?: x64,
         ioh: double(x64 ? PEdump::IMAGE_OPTIONAL_HEADER64 : PEdump::IMAGE_OPTIONAL_HEADER32,
           ImageBase: base,
-          SizeOfImage: size
-        )
-      )
+          SizeOfImage: size))
       expect(dump).to receive(:pe).and_return(pe)
       dump
     end
@@ -30,11 +26,11 @@ module Omnibus
 
     context "on windows" do
       before do
-        stub_ohai(platform: "windows", version: "2012")
+        stub_ohai(platform: "windows", version: "2012R2")
       end
 
       it "will perform dll base relocation checks" do
-        stub_ohai(platform: "windows", version: "2012")
+        stub_ohai(platform: "windows", version: "2012R2")
         expect(subject.relocation_checkable?).to be true
       end
 
@@ -101,7 +97,7 @@ module Omnibus
     end
 
     context "on linux" do
-      before { stub_ohai(platform: "ubuntu", version: "12.04") }
+      before { stub_ohai(platform: "ubuntu", version: "16.04") }
 
       let(:bad_healthcheck) do
         double("Mixlib::Shellout",
@@ -139,7 +135,7 @@ module Omnibus
         )
       end
 
-      let(:regexp) { ".*(\\.[ch]|\\.e*rb|\\.gemspec|\\.gitignore|\\.h*h|\\.java|\\.js|\\.json|\\.lock|\\.log|\\.lua|\\.md|\\.mkd|\\.out|\\.pl|\\.pm|\\.png|\\.py[oc]*|\\.r*html|\\.rdoc|\\.ri|\\.sh|\\.sql|\\.toml|\\.ttf|\\.txt|\\.xml|\\.yml|Gemfile|LICENSE|README|Rakefile|VERSION)$|.*\\/share\\/doc\\/.*|.*\\/share\\/postgresql\\/.*|.*\\/share\\/terminfo\\/.*|.*\\/terminfo\\/.*" }
+      let(:regexp) { ".*(\\.TXT|\\.[ch]|\\.[ch]pp|\\.[eh]rl|\\.app|\\.appup|\\.bat|\\.beam|\\.cc|\\.cmake|\\.conf|\\.css|\\.e*rb|\\.feature|\\.gemspec|\\.gif|\\.gitignore|\\.gitkeep|\\.h*h|\\.jar|\\.java|\\.jpg|\\.js|\\.jsm|\\.json|\\.lock|\\.log|\\.lua|\\.md|\\.mkd|\\.npmignore|\\.out|\\.packlist|\\.perl|\\.pl|\\.pm|\\.png|\\.pod|\\.properties|\\.py[oc]*|\\.r*html|\\.rake|\\.rdoc|\\.ri|\\.rst|\\.scss|\\.sh|\\.sql|\\.svg|\\.toml|\\.ttf|\\.txt|\\.xml|\\.yml|Gemfile|LICENSE|Makefile|README|Rakefile|VERSION|license)$|.*\\/build_info\\/.*|.*\\/licenses\\/.*|.*\\/LICENSES\\/.*|.*\\/man\\/.*|.*\\/share\\/doc\\/.*|.*\\/share\\/info\\/.*|.*\\/share\\/postgresql\\/.*|.*\\/share\\/terminfo\\/.*|.*\\/share\\/timezone\\/.*|.*\\/terminfo\\/.*" }
 
       it "raises an exception when there are external dependencies" do
         allow(subject).to receive(:shellout)

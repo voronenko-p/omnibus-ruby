@@ -10,8 +10,7 @@ module Omnibus
         path: "/path/to/files/chef.deb",
         name: "chef.deb",
         content: "BINARY",
-        validate!: true
-      )
+        validate!: true)
     end
 
     let(:metadata) do
@@ -68,7 +67,7 @@ module Omnibus
             },
             ohai: {
               locked_source: {
-                git: "https://github.com/opscode/ohai.git",
+                git: "https://github.com/chef/ohai.git",
               },
               locked_version: "fec0959aa5da5ce7ba0e07740dbc08546a8f53f0",
               source_type: "git",
@@ -90,8 +89,7 @@ module Omnibus
               license: "Apache-2.0",
             },
           },
-        }
-      )
+        })
     end
 
     let(:packages) { [package] }
@@ -112,6 +110,10 @@ module Omnibus
         "omnibus.sha512" => "SHA512",
         "omnibus.version" => "11.0.6",
         "omnibus.license" => "Apache-2.0",
+        "md5" => "ABCDEF123456",
+        "sha1" => "SHA1",
+        "sha256" => "SHA256",
+        "sha512" => "SHA512",
       }
     end
     let(:metadata_json_properites) do
@@ -137,7 +139,7 @@ module Omnibus
 
     subject { described_class.new(path, options) }
 
-    describe '#publish' do
+    describe "#publish" do
       before do
         allow(subject).to receive(:packages).and_return(packages)
         Config.artifactory_base_path("com/getchef")
@@ -191,7 +193,7 @@ module Omnibus
           # raise an exception a set number of times.
           @times = 0
           allow(artifact).to receive(:upload) do
-            @times += 1;
+            @times += 1
             raise Artifactory::Error::HTTPError.new("status" => "409", "message" => "CONFLICT") unless @times > 1
           end
         end
@@ -244,9 +246,25 @@ module Omnibus
           subject.publish
         end
       end
+
+      context "custom artifactory_publish_pattern is set" do
+        before do
+          Config.artifactory_publish_pattern("%{platform}/%{platform_version}/%{arch}/%{basename}")
+        end
+
+        it "uploads the package to the provided path" do
+          expect(artifact).to receive(:upload).with(
+            repository,
+            "com/getchef/ubuntu/14.04/x86_64/chef.deb",
+            hash_including(metadata_json_properites)
+          ).once
+
+          subject.publish
+        end
+      end
     end
 
-    describe '#metadata_properties_for' do
+    describe "#metadata_properties_for" do
       it "returns the transformed package metadata values" do
         expect(subject.send(:metadata_properties_for, package)).to include(package_properties.merge(build_values))
       end

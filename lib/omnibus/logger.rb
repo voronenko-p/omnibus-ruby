@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 module Omnibus
   class Logger
-    require "time"
+
+    require "time" unless defined?(Time.zone_offset)
 
     #
     # The amount of padding on the left column.
@@ -138,7 +139,7 @@ module Omnibus
       else
         left = "#{format_severity(severity)} | "
       end
-      "#{left.rjust(LEFT)}#{Time.now.iso8601()} | #{message}\n"
+      "#{left.rjust(LEFT)}#{Time.now.iso8601} | #{message}\n"
     end
 
     #

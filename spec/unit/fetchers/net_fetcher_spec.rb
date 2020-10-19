@@ -11,10 +11,10 @@ module Omnibus
 
     let(:manifest_entry) do
       double(Omnibus::ManifestEntry,
-             name: "file",
-             locked_version: "1.2.3",
-             described_version: "1.2.3",
-             locked_source: source)
+        name: "file",
+        locked_version: "1.2.3",
+        described_version: "1.2.3",
+        locked_source: source)
     end
 
     let(:cache_dir) { "/cache" }
@@ -25,7 +25,35 @@ module Omnibus
 
     subject { described_class.new(manifest_entry, project_dir, build_dir) }
 
-    describe '#fetch_required?' do
+    describe "authorization" do
+      context "when none passed" do
+        it "does not get passed" do
+          expect(subject).to receive(:download_file!) do |url_arg, path_arg, options_arg|
+            expect(options_arg).to_not have_key("Authorization")
+          end
+
+          subject.send(:download)
+        end
+      end
+
+      context "when passed" do
+        let(:auth_header) { "a fake auth header" }
+        let(:source) do
+          { url: "https://get.example.com/file.tar.gz", md5: "abcd1234", authorization: auth_header }
+        end
+
+        it "does get passed" do
+          expect(subject).to receive(:download_file!) do |url_arg, path_arg, options_arg|
+            expect(options_arg).to have_key("Authorization")
+            expect(options_arg["Authorization"]).to eq(auth_header)
+          end
+
+          subject.send(:download)
+        end
+      end
+    end
+
+    describe "#fetch_required?" do
       context "when file is not downloaded" do
         before { allow(File).to receive(:exist?).and_return(false) }
 
@@ -61,7 +89,7 @@ module Omnibus
       end
     end
 
-    describe '#version_guid' do
+    describe "#version_guid" do
       context "source with md5" do
         it "returns the shasum" do
           expect(subject.version_guid).to eq("md5:abcd1234")
@@ -99,7 +127,7 @@ module Omnibus
       end
     end
 
-    describe '#clean' do
+    describe "#clean" do
       before do
         allow(FileUtils).to receive(:rm_rf)
         allow(subject).to receive(:deploy)
@@ -138,7 +166,7 @@ module Omnibus
       end
     end
 
-    describe '#version_for_cache' do
+    describe "#version_for_cache" do
       context "source with md5" do
         it "returns the download URL and md5" do
           expect(subject.version_for_cache).to eq("download_url:https://get.example.com/file.tar.gz|md5:abcd1234")
@@ -172,6 +200,57 @@ module Omnibus
 
         it "returns the download URL and sha1" do
           expect(subject.version_for_cache).to eq("download_url:https://get.example.com/file.tar.gz|sha512:abcd1234")
+        end
+      end
+    end
+
+    describe "#download_url" do
+      context "s3 cache enabled" do
+        before do
+          Config.use_s3_caching(true)
+          Config.s3_access_key("ABCD1234")
+          Config.s3_secret_key("EFGH5678")
+          Config.s3_bucket("mybucket")
+
+          # clear cache
+          S3Cache.remove_instance_variable(:@s3_client) if S3Cache.instance_variable_defined?(:@s3_client)
+        end
+
+        it "returns the source s3 generated url" do
+          expect(subject.send(:download_url)).to eq("https://mybucket.s3.amazonaws.com/file-1.2.3-abcd1234")
+        end
+
+        context "custom endpoint" do
+          before { Config.s3_endpoint("http://example.com") }
+
+          it "returns the url using custom s3 endpoint" do
+            expect(subject.send(:download_url)).to eq("http://mybucket.example.com/file-1.2.3-abcd1234")
+          end
+        end
+
+        context "custom endpoint with path style urls" do
+          before do
+            Config.s3_force_path_style(true)
+            Config.s3_endpoint("http://example.com")
+          end
+
+          it "returns the url using path style" do
+            expect(subject.send(:download_url)).to eq("http://example.com/mybucket/file-1.2.3-abcd1234")
+          end
+        end
+
+        context "s3 transfer acceleration" do
+          before { Config.s3_accelerate(true) }
+
+          it "returns the url using s3 accelerate endpoint" do
+            expect(subject.send(:download_url)).to eq("https://mybucket.s3-accelerate.amazonaws.com/file-1.2.3-abcd1234")
+          end
+        end
+      end
+
+      context "s3 cache disabled" do
+        it "returns the source url" do
+          expect(subject.send(:download_url)).to eq("https://get.example.com/file.tar.gz")
         end
       end
     end
@@ -252,11 +331,10 @@ module Omnibus
       context "when the file is a .#{extension}" do
         let(:manifest_entry) do
           double(Omnibus::ManifestEntry,
-                 name: "file",
-                 locked_version: "1.2.3",
-                 described_version: "1.2.3",
-                 locked_source: { url: "https://get.example.com/file.#{extension}", md5: "abcd1234" }.merge(source_options)
-                )
+            name: "file",
+            locked_version: "1.2.3",
+            described_version: "1.2.3",
+            locked_source: { url: "https://get.example.com/file.#{extension}", md5: "abcd1234" }.merge(source_options))
         end
 
         subject { described_class.new(manifest_entry, project_dir, build_dir) }
@@ -274,7 +352,7 @@ module Omnibus
       end
     end
 
-    describe '#deploy' do
+    describe "#deploy" do
       before do
         described_class.send(:public, :deploy)
       end
@@ -282,10 +360,10 @@ module Omnibus
       context "when the downloaded file is a folder" do
         let(:manifest_entry) do
           double(Omnibus::ManifestEntry,
-                 name: "file",
-                 locked_version: "1.2.3",
-                 described_version: "1.2.3",
-                 locked_source: { url: "https://get.example.com/folder", md5: "abcd1234" })
+            name: "file",
+            locked_version: "1.2.3",
+            described_version: "1.2.3",
+            locked_source: { url: "https://get.example.com/folder", md5: "abcd1234" })
         end
 
         subject { described_class.new(manifest_entry, project_dir, build_dir) }
@@ -303,10 +381,10 @@ module Omnibus
       context "when the downloaded file is a regular file" do
         let(:manifest_entry) do
           double(Omnibus::ManifestEntry,
-                 name: "file",
-                 locked_version: "1.2.3",
-                 described_version: "1.2.3",
-                 locked_source: { url: "https://get.example.com/file", md5: "abcd1234" })
+            name: "file",
+            locked_version: "1.2.3",
+            described_version: "1.2.3",
+            locked_source: { url: "https://get.example.com/file", md5: "abcd1234" })
         end
 
         subject { described_class.new(manifest_entry, project_dir, build_dir) }
@@ -322,14 +400,14 @@ module Omnibus
       end
     end
 
-    describe '#extract' do
+    describe "#extract" do
 
       context "on Windows" do
         let(:root_prefix) { "C:" }
 
         before do
           Config.cache_dir("C:/")
-          stub_ohai(platform: "windows", version: "2012")
+          stub_ohai(platform: "windows", version: "2012R2")
           allow(Dir).to receive(:mktmpdir).and_yield("C:/tmp_dir")
         end
 
@@ -406,8 +484,12 @@ module Omnibus
       context "on Linux" do
         before do
           Config.cache_dir("/")
-          stub_ohai(platform: "ubuntu", version: "12.04")
+          stub_ohai(platform: "ubuntu", version: "16.04")
           stub_const("File::ALT_SEPARATOR", nil)
+
+          allow(Omnibus).to receive(:which)
+            .with("gtar")
+            .and_return(false)
         end
 
         context "when gtar is not present" do
@@ -435,12 +517,12 @@ module Omnibus
           before do
             Config.cache_dir("/")
 
-            stub_ohai(platform: "ubuntu", version: "12.04")
+            stub_ohai(platform: "ubuntu", version: "16.04")
             stub_const("File::ALT_SEPARATOR", nil)
 
             allow(Omnibus).to receive(:which)
-            .with("gtar")
-            .and_return("/path/to/gtar")
+              .with("gtar")
+              .and_return("/path/to/gtar")
           end
 
           it_behaves_like "an extractor", "7z", {},

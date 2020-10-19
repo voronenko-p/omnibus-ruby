@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "time"
+require "time" unless defined?(Time.zone_offset)
 
 module Omnibus
   # Provides methods for generating Omnibus project build version
@@ -34,7 +34,7 @@ module Omnibus
     #
     # @see Omnibus::BuildVersion#semver
     # @see Time#strftime
-    TIMESTAMP_FORMAT = "%Y%m%d%H%M%S"
+    TIMESTAMP_FORMAT = "%Y%m%d%H%M%S".freeze
 
     class << self
       # @see (BuildVersion#git_describe)
@@ -124,12 +124,21 @@ module Omnibus
       build_tag
     end
 
-    # We'll attempt to retrive the timestamp from the Jenkin's set BUILD_ID
-    # environment variable. This will ensure platform specfic packages for the
-    # same build will share the same timestamp.
+    # We'll attempt to retrieve the timestamp from the Jenkin's set BUILD_TIMESTAMP
+    # or fall back to BUILD_ID environment variable. This will ensure platform specfic
+    # packages for the same build will share the same timestamp.
     def build_start_time
       @build_start_time ||= begin
-                              if ENV["BUILD_ID"]
+                              if ENV["BUILD_TIMESTAMP"]
+                                begin
+                                  Time.strptime(ENV["BUILD_TIMESTAMP"], "%Y-%m-%d_%H-%M-%S")
+                                rescue ArgumentError
+                                  error_message =  "BUILD_TIMESTAMP environment variable "
+                                  error_message << "should be in YYYY-MM-DD_hh-mm-ss "
+                                  error_message << "format."
+                                  raise ArgumentError, error_message
+                                end
+                              elsif ENV["BUILD_ID"]
                                 begin
                                   Time.strptime(ENV["BUILD_ID"], "%Y-%m-%d_%H-%M-%S")
                                 rescue ArgumentError

@@ -32,13 +32,13 @@ module Omnibus
       create_directory(subject.scripts_staging_dir)
     end
 
-    describe '#id' do
+    describe "#id" do
       it "is :bff" do
         expect(subject.id).to eq(:bff)
       end
     end
 
-    describe '#package_name' do
+    describe "#package_name" do
       before do
         allow(subject).to receive(:safe_architecture).and_return("x86_64")
       end
@@ -48,19 +48,19 @@ module Omnibus
       end
     end
 
-    describe '#scripts_install_dir' do
+    describe "#scripts_install_dir" do
       it "is nested inside the project install_dir" do
         expect(subject.scripts_install_dir).to start_with(project.install_dir)
       end
     end
 
-    describe '#scripts_staging_dir' do
+    describe "#scripts_staging_dir" do
       it "is nested inside the staging_dir" do
         expect(subject.scripts_staging_dir).to start_with(staging_dir)
       end
     end
 
-    describe '#write_scripts' do
+    describe "#write_scripts" do
       context "when scripts are given" do
         let(:scripts) { %w{ preinst postinst prerm postrm } }
         before do
@@ -83,7 +83,7 @@ module Omnibus
       end
     end
 
-    describe '#write_gen_template' do
+    describe "#write_gen_template" do
       before do
         allow(subject).to receive(:safe_architecture).and_return("x86_64")
       end
@@ -167,13 +167,13 @@ module Omnibus
         end
 
         context "creates a config script" do
-          it 'when there wasn\'t one provided' do
+          it "when there wasn't one provided" do
             FileUtils.rm_f("#{subject.scripts_staging_dir}/config")
             subject.write_gen_template
             expect(File).to exist("#{subject.scripts_staging_dir}/config")
           end
 
-          it 'when one is provided in the project\'s def' do
+          it "when one is provided in the project's def" do
             create_file("#{project_root}/package-scripts/project/config")
             subject.write_gen_template
             contents = File.read("#{subject.scripts_staging_dir}/config")
@@ -188,6 +188,36 @@ module Omnibus
             expect(contents).to include("mv '/colon____dir/file' '/colon::dir/file'")
             expect(contents).to include("mv '/comma__dir/file' '/comma,dir/file'")
           end
+        end
+      end
+
+      context "when paths with invalid characters are present", if: !windows? do
+        let(:contents) do
+          subject.write_gen_template
+          File.read(gen_file)
+        end
+
+        before do
+          create_file("#{staging_dir}/file with_a_space")
+          create_file("#{staging_dir}/file_with_{left_brace")
+          create_file("#{staging_dir}/file_with_}right_brace")
+          create_file("#{staging_dir}/file_that_meets_expectations")
+        end
+
+        it "includes a file that does not include invalid characters" do
+          expect(contents).to include("/file_that_meets_expectations")
+        end
+
+        it "does not include a file with spaces in the path" do
+          expect(contents).to_not include("/file with_a_space")
+        end
+
+        it "does not include a file with left braces in the path" do
+          expect(contents).to_not include("/file_with_{left_brace")
+        end
+
+        it "does not include a file with right braces in the path" do
+          expect(contents).to_not include("/file_with_}right_brace")
         end
       end
 
@@ -224,13 +254,13 @@ module Omnibus
       end
     end
 
-    describe '#create_bff_file' do
+    describe "#create_bff_file" do
       # Need to mock out the id calls
-      let(:id_shellout) {
+      let(:id_shellout) do
         shellout_mock = double("shellout_mock")
         allow(shellout_mock).to receive(:stdout).and_return("300")
         shellout_mock
-      }
+      end
 
       before do
         allow(subject).to receive(:shellout!)
@@ -240,7 +270,7 @@ module Omnibus
         allow(subject).to receive(:shellout!)
           .with("id -g").and_return(id_shellout)
 
-        create_file(File.join(staging_dir, ".info", "#{project.name}.inventory")) {
+        create_file(File.join(staging_dir, ".info", "#{project.name}.inventory")) do
           <<-INVENTORY.gsub(/^\s{12}/, "")
             /opt/project/version-manifest.txt:
                       owner = root
@@ -251,7 +281,7 @@ module Omnibus
                       size = 1906
                       checksum = "02776    2 "
           INVENTORY
-        }
+        end
         create_file("#{staging_dir}/file") { "http://goo.gl/TbkO01" }
       end
 
@@ -271,7 +301,7 @@ module Omnibus
         # A note - the /opt/ here is essentially project.install_dir one level up.
         # There is nothing magical about 'opt' as a directory.
         expect(subject).to receive(:shellout!)
-          .with(/chown -Rh 0:0 #{staging_dir}\/opt$/)
+          .with(%r{chown -Rh 0:0 #{staging_dir}/opt$})
         subject.create_bff_file
       end
 
@@ -282,7 +312,7 @@ module Omnibus
 
       it "uses the correct command" do
         expect(subject).to receive(:shellout!)
-          .with(/\/usr\/sbin\/mkinstallp -d/)
+          .with(%r{/usr/sbin/mkinstallp -d})
         subject.create_bff_file
       end
 
@@ -307,7 +337,7 @@ module Omnibus
       end
     end
 
-    describe '#safe_base_package_name' do
+    describe "#safe_base_package_name" do
       context 'when the project name is "safe"' do
         it "returns the value without logging a message" do
           expect(subject.safe_base_package_name).to eq("project")
@@ -328,22 +358,22 @@ module Omnibus
       end
     end
 
-    describe '#create_bff_file_name' do
+    describe "#create_bff_file_name" do
       it "constructs the proper package name" do
         expect(subject.create_bff_file_name).to eq("project-1.2.3-2.x86_64.bff")
       end
 
     end
 
-    describe '#bff_version' do
+    describe "#bff_version" do
       it "returns the build version up with the build iteration" do
         expect(subject.bff_version).to eq("1.2.3.2")
       end
     end
 
-    describe '#safe_architecture' do
+    describe "#safe_architecture" do
       before do
-        stub_ohai(platform: "ubuntu", version: "12.04") do |data|
+        stub_ohai(platform: "ubuntu", version: "16.04") do |data|
           data["kernel"]["machine"] = "i386"
         end
       end

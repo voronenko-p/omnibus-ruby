@@ -6,38 +6,42 @@ module Omnibus
   describe ChangeLogPrinter do
     describe "#print" do
       def manifest_entry_for(name, dv, lv, source_type = :local)
-        Omnibus::ManifestEntry.new(name, { :described_version => dv,
-                                           :locked_version => lv,
-                                           :locked_source => {
-                                             :git => "git://#{name}@example.com" },
-                                           :source_type => source_type,
+        Omnibus::ManifestEntry.new(name, { described_version: dv,
+                                           locked_version: lv,
+                                           locked_source: {
+                                             git: "git://#{name}@example.com" },
+                                           source_type: source_type,
         })
       end
 
-      let(:changelog) { double(ChangeLog,
-                               changelog_entries: %w{entry1 entry2},
-                               authors: %w{alice bob}) }
-      let(:git_changelog) { double(ChangeLog,
-                                   changelog_entries:
-                                   %w{sub-entry1 sub-entry2}) }
+      let(:changelog) do
+        double(ChangeLog,
+          changelog_entries: %w{entry1 entry2},
+          authors: %w{alice bob})
+      end
+      let(:git_changelog) do
+        double(ChangeLog,
+          changelog_entries:
+          %w{sub-entry1 sub-entry2})
+      end
       let(:now) { double(Time) }
       let(:emptydiff) { EmptyManifestDiff.new }
-      let(:old_manifest) {
-        m = Manifest.new()
+      let(:old_manifest) do
+        m = Manifest.new
         m.add("updated-comp", manifest_entry_for("updated-comp", "v9", "v9"))
         m.add("updated-comp-2", manifest_entry_for("updated-comp-2", "someref0", "someref0", :git))
         m.add("removed-comp", manifest_entry_for("removed-comp", "v9", "v9"))
         m.add("removed-comp-2", manifest_entry_for("removed-comp-2", "v10", "v10"))
         m
-      }
-      let(:new_manifest) {
-        m = Manifest.new()
+      end
+      let(:new_manifest) do
+        m = Manifest.new
         m.add("updated-comp", manifest_entry_for("updated-comp", "v10", "v10"))
         m.add("updated-comp-2", manifest_entry_for("updated-comp-2", "someotherref", "someotherref", :git))
         m.add("added-comp", manifest_entry_for("added-comp", "v100", "v100"))
         m.add("added-comp-2", manifest_entry_for("added-comp-2", "v101", "v101"))
         m
-      }
+      end
       let(:diff) { ManifestDiff.new(old_manifest, new_manifest) }
 
       it "starts with a changelog version header including the time" do

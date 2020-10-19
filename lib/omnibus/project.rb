@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2018 Chef Software, Inc.
 # Copyright 2014 Noah Kantrowitz
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 
-require "time"
-require "ffi_yajl"
+require "time" unless defined?(Time.zone_offset)
+require "ffi_yajl" unless defined?(FFI_Yajl)
 require "omnibus/manifest"
 require "omnibus/manifest_entry"
 require "omnibus/reports"
@@ -394,7 +394,7 @@ module Omnibus
     def build_version(val = NULL, &block)
       if block && !null?(val)
         raise Error, "You cannot specify additional parameters to " \
-          '#build_version when a block is given!'
+          "#build_version when a block is given!"
       end
 
       if block
@@ -925,7 +925,7 @@ module Omnibus
     #
     def text_manifest_path(path = NULL)
       if null?(path)
-        @test_manifest_path || File.join(install_dir, "version-manifest.txt")
+        @text_manifest_path || File.join(install_dir, "version-manifest.txt")
       else
         @text_manifest_path = path
       end
@@ -1274,7 +1274,7 @@ module Omnibus
     # @return [1, 0, -1]
     #
     def <=>(other)
-      self.name <=> other.name
+      name <=> other.name
     end
 
     #
@@ -1324,6 +1324,9 @@ module Omnibus
         softwares.each do |software|
           software.build_me([license_collector])
         end
+
+        # If nothing has dirtied the cache, checkout the last cache dir
+        restore_complete_build unless dirty?
       end
 
       # Install shipped sources in the sources/ folder
@@ -1343,6 +1346,13 @@ module Omnibus
 
       package_me
       compress_me
+    end
+
+    def restore_complete_build
+      if Config.use_git_caching
+        log.info(log_key) { "Cache not dirtied, restoring last marker" }
+        GitCache.new(softwares.last).restore_from_cache
+      end
     end
 
     def write_json_manifest
@@ -1447,7 +1457,7 @@ module Omnibus
     # @return [true, false]
     #
     def ==(other)
-      self.hash == other.hash
+      hash == other.hash
     end
     alias_method :eql?, :==
 

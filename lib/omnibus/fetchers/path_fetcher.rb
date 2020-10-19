@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "fileutils"
+require "fileutils" unless defined?(FileUtils)
 
 module Omnibus
   class PathFetcher < Fetcher
@@ -49,7 +49,7 @@ module Omnibus
     #   have already removed anything extraneous.
     #
     def clean
-      return true
+      true
     end
 
     #

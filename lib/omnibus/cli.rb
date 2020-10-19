@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-require "thor"
+require "thor" unless defined?(Thor)
 require "omnibus"
-require "ffi_yajl"
+require "ffi_yajl" unless defined?(FFI_Yajl)
 
 module Omnibus
   class CLI < Command::Base
@@ -67,13 +67,13 @@ module Omnibus
                   type: :boolean,
                   default: true
     method_option :use_manifest,
-                  desc: "Use the given manifest when downloading software sources.",
-                  type: :string,
-                  default: nil
+      desc: "Use the given manifest when downloading software sources.",
+      type: :string,
+      default: nil
     method_option :populate_s3_cache,
-                  desc: "Populate the S3 cache.",
-                  type: :boolean,
-                  default: false
+      desc: "Populate the S3 cache.",
+      type: :boolean,
+      default: false
     desc "build PROJECT", "Build the given Omnibus project"
     def build(name)
       manifest = if @options[:use_manifest]
@@ -91,7 +91,7 @@ module Omnibus
       if @options[:output_manifest]
         FileUtils.mkdir_p("pkg")
         File.open(::File.join("pkg", "version-manifest.json"), "w") do |f|
-          f.write(FFI_Yajl::Encoder.encode(project.built_manifest.to_hash))
+          f.write(FFI_Yajl::Encoder.encode(project.built_manifest.to_hash, pretty: true))
         end
       end
     end

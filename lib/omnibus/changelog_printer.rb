@@ -7,9 +7,9 @@ module Omnibus
     end
 
     def print(new_version)
-      puts "## #{new_version} (#{Time.now.strftime('%Y-%m-%d')})"
+      puts "## #{new_version} (#{Time.now.strftime("%Y-%m-%d")})"
       print_changelog
-      if !diff.empty?
+      unless diff.empty?
         print_components
         puts ""
       end
@@ -22,7 +22,7 @@ module Omnibus
 
     def print_changelog(cl = changelog, indent = 0)
       cl.changelog_entries.each do |entry|
-        puts "#{' ' * indent}* #{entry.sub("\n", "\n  #{' ' * indent}")}\n"
+        puts "#{" " * indent}* #{entry.sub("\n", "\n  #{" " * indent}")}\n"
       end
     end
 
@@ -49,7 +49,7 @@ module Omnibus
       puts "Updated Components"
       diff.updated.each do |entry|
         puts sprintf("* %s (%.8s -> %.8s)",
-                     entry[:name], entry[:old_version], entry[:new_version])
+          entry[:name], entry[:old_version], entry[:new_version])
         repo_path = ::File.join(source_path, entry[:name].to_s)
         if entry[:source_type] == :git && ::File.directory?("#{repo_path}/.git")
           cl = ChangeLog.new(entry[:old_version], entry[:new_version], GitRepository.new("#{repo_path}"))

@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "fileutils"
+require "fileutils" unless defined?(FileUtils)
 
 module Omnibus
   module FileSyncer
@@ -34,6 +34,7 @@ module Omnibus
     #   the list of all files
     #
     def glob(pattern)
+      pattern = Pathname.new(pattern).cleanpath.to_s
       Dir.glob(pattern, File::FNM_DOTMATCH).sort.reject do |file|
         basename = File.basename(file)
         IGNORED_FILES.include?(basename)
@@ -58,7 +59,7 @@ module Omnibus
     #
     def all_files_under(source, options = {})
       excludes = Array(options[:exclude]).map do |exclude|
-        [exclude, "#{exclude}/*"]
+        [exclude, "#{exclude}/**"]
       end.flatten
 
       includes = Array(options[:include]).map do |include|
@@ -68,7 +69,7 @@ module Omnibus
       source_files = glob(File.join(source, "**/*"))
       source_files = source_files.reject do |source_file|
         basename = relative_path_for(source_file, source)
-        excludes.any? { |exclude| File.fnmatch?(exclude, basename, File::FNM_DOTMATCH) }
+        excludes.any? { |exclude| File.fnmatch?(exclude, basename, File::FNM_DOTMATCH | File::FNM_PATHNAME) }
       end
 
       if not includes.empty?
@@ -160,8 +161,7 @@ module Omnibus
             end
           end
         else
-          raise RuntimeError,
-                "Unknown file type: `File.ftype(source_file)' at `#{source_file}'!"
+          raise "Unknown file type: `File.ftype(source_file)' at `#{source_file}'!"
         end
       end
 

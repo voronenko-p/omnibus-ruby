@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "fileutils"
+require "fileutils" unless defined?(FileUtils)
 require "omnibus/download_helpers"
 
 module Omnibus
@@ -22,16 +22,16 @@ module Omnibus
     include DownloadHelpers
 
     # Use 7-zip to extract 7z/zip for Windows
-    WIN_7Z_EXTENSIONS = %w{.7z .zip}
+    WIN_7Z_EXTENSIONS = %w{.7z .zip}.freeze
 
     # tar probably has compression scheme linked in, otherwise for tarballs
-    COMPRESSED_TAR_EXTENSIONS = %w{.tar.gz .tgz tar.bz2 .tar.xz .txz .tar.lzma}
+    COMPRESSED_TAR_EXTENSIONS = %w{.tar.gz .tgz tar.bz2 .tar.xz .txz .tar.lzma}.freeze
     TAR_EXTENSIONS = COMPRESSED_TAR_EXTENSIONS + [".tar"]
 
     ALL_EXTENSIONS = WIN_7Z_EXTENSIONS + TAR_EXTENSIONS
 
     # Digest types used for verifying file checksums
-    DIGESTS = [:sha512, :sha256, :sha1, :md5]
+    DIGESTS = %i{sha512 sha256 sha1 md5}.freeze
 
     #
     # A fetch is required if the downloaded_file (such as a tarball) does not
@@ -110,14 +110,16 @@ module Omnibus
     end
 
     #
-    # The path on disk to the downloaded asset. This method requires the
-    # presence of a +source_uri+.
+    # The path on disk to the downloaded asset. The filename is defined by
+    # +source :cached_name+. If ommited, then it comes from the software's
+    # +source :url+ value
     #
     # @return [String]
     #
     def downloaded_file
-      basename = File.basename(source[:url], "?*")
-      File.join(Config.cache_dir, "#{self.name}-#{basename}")
+      filename = source[:cached_name] if source[:cached_name]
+      filename ||= File.basename(source[:url], "?*")
+      File.join(Config.cache_dir, filename)
     end
 
     #
@@ -186,6 +188,7 @@ module Omnibus
 
       # Set the cookie if one was given
       options["Cookie"] = source[:cookie] if source[:cookie]
+      options["Authorization"] = source[:authorization] if source[:authorization]
 
       # The s3 bucket isn't public, force downloading using the sdk
       if Config.use_s3_caching && Config.s3_authenticated_download
@@ -360,8 +363,7 @@ module Omnibus
     #
     # @return [[String]]
     #
-    def extract_command
-    end
+    def extract_command; end
 
     #
     # Primitively determine whether we should use gtar or tar to untar a file.

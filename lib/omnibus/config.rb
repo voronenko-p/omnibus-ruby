@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "singleton"
+require "singleton" unless defined?(Singleton)
 
 module Omnibus
   class Config
@@ -101,9 +101,9 @@ module Omnibus
     # @return [String]
     default(:base_dir) do
       if Ohai["platform"] == "windows"
-        "C:/omnibus-ruby"
+        File.join(*["C:/omnibus-ruby", cache_suffix].compact)
       else
-        "/var/cache/omnibus"
+        File.join(*["/var/cache/omnibus", cache_suffix].compact)
       end
     end
 
@@ -112,6 +112,12 @@ module Omnibus
     #
     # @return [String]
     default(:cache_dir) { File.join(base_dir, "cache") }
+
+    # The suffix added (typically the software name) to create a wholly
+    # separate base cache directory for the software.
+    #
+    # @return [String]
+    default(:cache_suffix, nil)
 
     # The absolute path to the directory on the virtual machine where
     # git caching will occur and software's will be progressively cached.
@@ -277,9 +283,9 @@ module Omnibus
 
     # The S3 access key to use with S3 caching.
     #
-    # @return [String]
+    # @return [String, nil]
     default(:s3_access_key) do
-      if s3_profile || s3_role || s3_instance_profile
+      if s3_profile || s3_role || s3_instance_profile || s3_iam_role_arn
         nil
       else
         raise MissingRequiredAttribute.new(self, :s3_access_key, "'ABCD1234'")
@@ -288,9 +294,9 @@ module Omnibus
 
     # The S3 secret key to use with S3 caching.
     #
-    # @return [String]
+    # @return [String, nil]
     default(:s3_secret_key) do
-      if s3_profile || s3_role || s3_instance_profile
+      if s3_profile || s3_role || s3_instance_profile || s3_iam_role_arn
         nil
       else
         raise MissingRequiredAttribute.new(self, :s3_secret_key, "'EFGH5678'")
@@ -306,6 +312,11 @@ module Omnibus
     #
     # @return [String, nil]
     default(:s3_credentials_file_path, nil)
+
+    # The AWS IAM role arn to use with S3 caching.
+    #
+    # @return [String, nil]
+    default(:s3_iam_role_arn, nil)
 
     # The region of the S3 bucket you want to cache software artifacts in.
     # Defaults to 'us-east-1'
@@ -426,6 +437,14 @@ module Omnibus
       raise MissingRequiredAttribute.new(self, :artifactory_base_path, "'com/mycompany'")
     end
 
+    # Directory pattern for the Artifactory publisher.
+    # Interpolation of metadata keys is supported.
+    #
+    # @example '%{platform}/%{platform_version}/%{arch}/%{basename}'
+    #
+    # @return [String]
+    default(:artifactory_publish_pattern, "%{name}/%{version}/%{platform}/%{platform_version}/%{basename}")
+
     # The path on disk to an SSL pem file to sign requests with.
     #
     # @return [String, nil]
@@ -466,17 +485,43 @@ module Omnibus
 
     # The S3 access key to use for S3 artifact release.
     #
-    # @return [String]
+    # @return [String, nil]
     default(:publish_s3_access_key) do
-      raise MissingRequiredAttribute.new(self, :publish_s3_access_key, "'ABCD1234'")
+      if publish_s3_profile
+        nil
+      else
+        raise MissingRequiredAttribute.new(self, :publish_s3_access_key, "'ABCD1234'")
+      end
     end
 
     # The S3 secret key to use for S3 artifact release
     #
-    # @return [String]
+    # @return [String, nil]
     default(:publish_s3_secret_key) do
-      raise MissingRequiredAttribute.new(self, :publish_s3_secret_key, "'EFGH5678'")
+      if publish_s3_profile
+        nil
+      else
+        raise MissingRequiredAttribute.new(self, :publish_s3_secret_key, "'EFGH5678'")
+      end
     end
+
+    # The AWS credentials profile to use with S3 publisher.
+    #
+    # @return [String, nil]
+    default(:publish_s3_profile, nil)
+
+    # The AWS IAM role arn to use with S3 publisher.
+    #
+    # @return [String, nil]
+    default(:publish_s3_iam_role_arn, nil)
+
+    # Directory pattern for the S3 publisher.
+    # Interpolation of metadata keys is supported.
+    #
+    # @example '%{platform}/%{platform_version}/%{arch}/%{basename}'
+    #
+    # @return [String]
+    default(:s3_publish_pattern, "%{platform}/%{platform_version}/%{arch}/%{basename}")
 
     # --------------------------------------------------
     # @!endgroup
@@ -548,6 +593,12 @@ module Omnibus
       end
       :x86
     end
+
+    # Flag specifying whether the project should be built with FIPS
+    # compatability or not.
+    #
+    # @return [true, false]
+    default(:fips_mode, false)
 
     # --------------------------------------------------
     # @!endgroup

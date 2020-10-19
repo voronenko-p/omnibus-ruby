@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "fileutils"
+require "fileutils" unless defined?(FileUtils)
 
 module Omnibus
   class Packager::Base
@@ -167,6 +167,10 @@ module Omnibus
       @skip_package ||= val
     end
     expose :skip_packager
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
     #
     # @!endgroup
     # --------------------------------------------------
@@ -228,6 +232,14 @@ module Omnibus
     #
     def staging_dbg_dir
       @staging_dbg_dir ||= Dir.mktmpdir("#{project.package_name}-dbg")
+    end
+
+    # Helper method to produce staging paths
+    #
+    # @return [String]
+    #
+    def staging_dir_path(file_name)
+      File.join(staging_dir, file_name)
     end
 
     #

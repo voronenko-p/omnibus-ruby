@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Chef Software, Inc.
+# Copyright 2015-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
-require "ffi_yajl"
+require "ffi_yajl" unless defined?(FFI_Yajl)
 
 module Omnibus
   class Manifest
-    class InvalidManifestFormat < Exception; end
-    class NotAManifestEntry < Exception; end
-    class MissingManifestEntry < Exception; end
+    class InvalidManifestFormat < RuntimeError; end
+    class NotAManifestEntry < RuntimeError; end
+    class MissingManifestEntry < RuntimeError; end
 
     include Logging
 
@@ -44,7 +44,7 @@ module Omnibus
     end
 
     def add(name, entry)
-      if !entry.is_a? Omnibus::ManifestEntry
+      unless entry.is_a? Omnibus::ManifestEntry
         raise NotAManifestEntry, "#{entry} is not an Omnibus:ManifestEntry"
       end
 
@@ -127,8 +127,6 @@ module Omnibus
       hash = FFI_Yajl::Parser.parse(data, symbolize_names: true)
       from_hash(hash)
     end
-
-    private
 
     #
     # Utility function to convert a Hash with String keys to a Hash

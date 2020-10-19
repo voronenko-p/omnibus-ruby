@@ -1,4 +1,4 @@
-require "open-uri"
+require "open-uri" unless defined?(OpenURI)
 
 module OpenURI
   class << self
@@ -64,6 +64,7 @@ module OpenURI
   #
   # @see http://winstonyw.com/2013/10/02/openuris_open_tempfile_and_stringio/
   #
+  # rubocop:disable Naming/ConstantName
   class Buffer
     remove_const :StringMax
     StringMax = 0

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Chef Software, Inc.
+# Copyright 2015-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 
-require "uri"
-require "fileutils"
+require "uri" unless defined?(URI)
+require "fileutils" unless defined?(FileUtils)
 require "omnibus/download_helpers"
 require "license_scout/collector"
+require "license_scout/reporter"
 require "license_scout/options"
 
 module Omnibus
@@ -127,8 +128,7 @@ module Omnibus
     #
     # @return [void]
     #
-    def execute_pre_build(software)
-    end
+    def execute_pre_build(software); end
 
     # Callback that gets called by Software#build_me after the build is done.
     # Invokes license copying for the given software. This ensures that
@@ -142,9 +142,9 @@ module Omnibus
     #
     def execute_post_build(software)
       collect_licenses_for(software)
-
       unless software.skip_transitive_dependency_licensing
         collect_transitive_dependency_licenses_for(software)
+        check_transitive_dependency_licensing_errors_for(software)
       end
     end
 
@@ -243,7 +243,7 @@ module Omnibus
 
         out << "This product bundles #{name} #{version},\n"
         out << "which is available under a \"#{license}\" License.\n"
-        if !license_files.empty?
+        unless license_files.empty?
           out << "For details, see:\n"
           license_files.each do |license_file|
             out << "#{license_package_location(name, license_file)}\n"
@@ -391,7 +391,7 @@ module Omnibus
     #
     def local?(license)
       u = URI(license)
-      return u.scheme.nil?
+      u.scheme.nil?
     end
 
     #
@@ -437,12 +437,14 @@ module Omnibus
 
       if Config.fatal_transitive_dependency_licensing_warnings && !transitive_dependency_licensing_warnings.empty?
         warnings_to_raise << transitive_dependency_licensing_warnings
+        warnings_to_raise << "If you are encountering missing license or missing license file errors for **transitive** dependencies, you can provide overrides for the missing information at https://github.com/chef/license_scout/blob/1-stable/lib/license_scout/overrides.rb#L93. \n Promote license_scout to Rubygems with `/expeditor promote chef/license_scout:1-stable X.Y.Z` in slack."
       end
 
       warnings_to_raise.flatten!
       raise LicensingError.new(warnings_to_raise) unless warnings_to_raise.empty?
     end
 
+    # 0. Translate all transitive dependency licensing issues into omnibus warnings
     # 1. Parse all the licensing information for all software from 'cache_dir'
     # 2. Merge and drop the duplicates
     # 3. Add these licenses to the main manifest, to be merged with the main
@@ -496,21 +498,22 @@ module Omnibus
       # the build completes we will process these license files but we need to
       # perform this step after build, before git_cache to be able to operate
       # correctly with the git_cache.
-      license_output_dir = File.join(cache_dir, software.name)
 
       collector = LicenseScout::Collector.new(
-        software.project.name,
+        software.name,
         software.project_dir,
-        license_output_dir,
+        license_output_dir(software),
         LicenseScout::Options.new(
           environment: software.with_embedded_path,
-          ruby_bin: software.embedded_bin("ruby")
+          ruby_bin: software.embedded_bin("ruby"),
+          manual_licenses: software.dependency_licenses
         )
       )
 
       begin
+        # We do not automatically collect dependency licensing information when
+        # skip_transitive_dependency_licensing is set on the software.
         collector.run
-        collector.issue_report.each { |i| transitive_dependency_licensing_warning(i) }
       rescue LicenseScout::Exceptions::UnsupportedProjectType => e
         # Looks like this project is not supported by LicenseScout. Either the
         # language and the dependency manager used by the project is not
@@ -526,17 +529,53 @@ the list of supported languages and dependency managers. If this project does \
 not have any transitive dependencies, consider setting \
 'skip_transitive_dependency_licensing' to 'true' in order to correct this error.
 EOH
+        # If we got here, we need to fail now so we don't take a git
+        # cache snapshot, or else the software build could be restored
+        # from cache without fixing the license issue.
+        raise_if_warnings_fatal!
       rescue LicenseScout::Exceptions::Error => e
         transitive_dependency_licensing_warning(<<~EOH)
 Can not automatically detect licensing information for '#{software.name}' using \
 license_scout. Error is: '#{e}'
 EOH
+        # If we got here, we need to fail now so we don't take a git
+        # cache snapshot, or else the software build could be restored
+        # from cache without fixing the license issue.
+        raise_if_warnings_fatal!
       rescue Exception => e
-        transitive_dependency_licensing_warning(<<~EOH)
+        # This catch all exception handling is here in order not to fail builds
+        # until license_scout gets more stable. As we are adding support for more
+        # and more dependency managers we discover unhandled edge cases which
+        # requires us to have this. Remove this once license_scout is stable.
+        transitive_dependency_licensing_warning(<<-EOH)
 Unexpected error while running license_scout for '#{software.name}': '#{e}'
 EOH
         # rubocop:enable Layout/ClosingHeredocIndentation, Naming/HeredocDelimiterNaming, Layout/IndentHeredoc
+
+        # If we got here, we need to fail now so we don't take a git
+        # cache snapshot, or else the software build could be restored
+        # from cache without fixing the license issue.
+        raise_if_warnings_fatal!
       end
+    end
+
+    # Checks transitive dependency licensing errors for the given software
+    def check_transitive_dependency_licensing_errors_for(software)
+      reporter = LicenseScout::Reporter.new(license_output_dir(software))
+      begin
+        reporter.report.each { |i| transitive_dependency_licensing_warning(i) }
+      rescue LicenseScout::Exceptions::InvalidOutputReport => e
+        transitive_dependency_licensing_warning(<<-EOH)
+Licensing output report at '#{license_output_dir(software)}' has errors:
+#{e}
+EOH
+      end
+      raise_if_warnings_fatal!
+    end
+
+    # The directory to store the licensing information for the given software
+    def license_output_dir(software)
+      File.join(cache_dir, software.name)
     end
 
     # Collect the license files for the software.
@@ -594,6 +633,7 @@ EOH
       "APL-1.0",       # Adaptive Public License
       "Apache-2.0",    # Apache License 2.0
       "APSL-2.0",      # Apple Public Source License
+      "Artistic-1.0",  # Artistic license 1.0
       "Artistic-2.0",  # Artistic license 2.0
       "AAL",           # Attribution Assurance Licenses
       "BSD-3-Clause",  # BSD 3-Clause "New" or "Revised" License
@@ -617,6 +657,7 @@ EOH
       "AGPL-3.0",      # GNU Affero General Public License v3
       "GPL-2.0",       # GNU General Public License version 2.0
       "GPL-3.0",       # GNU General Public License version 3.0
+      "LGPL-2.0",      # GNU Library or "Lesser" General Public License version 2.0
       "LGPL-2.1",      # GNU Library or "Lesser" General Public License version 2.1
       "LGPL-3.0",      # GNU Library or "Lesser" General Public License version 3.0
       "HPND",          # Historical Permission Notice and Disclaimer
@@ -677,6 +718,7 @@ EOH
       "Oracle-Binary", # http://www.oracle.com/technetwork/java/javase/terms/license/index.html
       "OpenSSL",       # https://www.openssl.org/source/license.html
       "Chef-MLSA",     # https://www.chef.io/online-master-agreement/
+      "Perl-5",        # http://dev.perl.org/licenses/
     ].freeze
   end
 end

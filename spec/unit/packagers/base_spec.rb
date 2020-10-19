@@ -71,7 +71,7 @@ module Omnibus
       end
     end
 
-    describe '#install_dir' do
+    describe "#install_dir" do
       it "is a DSL method" do
         expect(subject).to have_exposed_method(:install_dir)
       end
@@ -81,13 +81,30 @@ module Omnibus
       end
     end
 
-    describe '#windows_safe_path' do
+    describe "#windows_safe_path" do
       it "is a DSL method" do
         expect(subject).to have_exposed_method(:windows_safe_path)
       end
     end
 
-    describe '#run!' do
+    describe "#skip_packager" do
+      it "is a DSL method" do
+        expect(subject).to have_exposed_method(:skip_packager)
+      end
+
+      it "requires the value to be a TrueClass or a FalseClass" do
+        expect do
+          subject.skip_packager(Object.new)
+        end.to raise_error(InvalidValue)
+      end
+
+      it "returns the given value" do
+        subject.skip_packager(true)
+        expect(subject.skip_packager).to be_truthy
+      end
+    end
+
+    describe "#run!" do
       before do
         allow(subject).to receive(:remove_directory)
         allow(Metadata).to receive(:generate)
@@ -105,14 +122,14 @@ module Omnibus
       end
     end
 
-    describe '#staging_dir' do
+    describe "#staging_dir" do
       it "creates a temporary directory" do
         expect(Dir).to receive(:mktmpdir)
         subject.send(:staging_dir)
       end
     end
 
-    describe '#resource_path' do
+    describe "#resource_path" do
       let(:id) { :base }
       before { allow(subject).to receive(:id).and_return(id) }
 

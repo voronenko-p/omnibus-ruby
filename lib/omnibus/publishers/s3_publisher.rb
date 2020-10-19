@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2014 Chef Software, Inc.
+# Copyright 2012-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,13 +30,27 @@ module Omnibus
 
         # Upload the metadata first
         log.debug(log_key) { "Uploading '#{package.metadata.name}'" }
-        store_object(key_for(package, package.metadata.name), FFI_Yajl::Encoder.encode(package.metadata.to_hash, pretty: true),
-                     nil, access_policy)
+
+        s3_metadata_object = store_object(
+          key_for(package, package.metadata.name),
+          FFI_Yajl::Encoder.encode(package.metadata.to_hash, pretty: true),
+          nil,
+          access_policy
+        )
+
+        log.debug(log_key) { "Uploading is completed. Download URL (#{access_policy}): #{s3_metadata_object.public_url}" }
 
         # Upload the actual package
         log.info(log_key) { "Uploading '#{package.name}'" }
-        store_object(key_for(package, package.name), package.content,
-                     package.metadata[:md5], access_policy)
+
+        s3_object = store_object(
+          key_for(package, package.name),
+          package.content,
+          package.metadata[:md5],
+          access_policy
+        )
+
+        log.info(log_key) { "Uploading is completed. Download URL (#{access_policy}): #{s3_object.public_url}" }
 
         # If a block was given, "yield" the package to the caller
         yield(package) if block
@@ -46,31 +60,40 @@ module Omnibus
     private
 
     def s3_configuration
-      {
+      config = {
         region: @options[:region],
-        access_key_id: Config.publish_s3_access_key,
-        secret_access_key: Config.publish_s3_secret_key,
         bucket_name: @options[:bucket],
       }
+
+      if Config.publish_s3_iam_role_arn
+        config[:publish_s3_iam_role_arn] = Config.publish_s3_iam_role_arn
+      elsif Config.publish_s3_profile
+        config[:profile] = Config.publish_s3_profile
+      else
+        config[:access_key_id] = Config.publish_s3_access_key
+        config[:secret_access_key] = Config.publish_s3_secret_key
+      end
+
+      config
     end
 
     #
     # The unique upload key for this package. The additional "stuff" is
     # postfixed to the end of the path.
     #
+    # @example
+    #   'el/6/x86_64/chef-11.6.0-1.el6.x86_64.rpm/chef-11.6.0-1.el6.x86_64.rpm'
+    #
     # @param [Package] package
     #   the package this key is for
     # @param [Array<String>] stuff
-    #   the additional things to prepend
+    #   the additional things to append
     #
     # @return [String]
     #
     def key_for(package, *stuff)
       File.join(
-        package.metadata[:platform],
-        package.metadata[:platform_version],
-        package.metadata[:arch],
-        package.name,
+        Config.s3_publish_pattern % package.metadata,
         *stuff
       )
     end

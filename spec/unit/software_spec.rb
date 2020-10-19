@@ -42,6 +42,7 @@ module Omnibus
     it_behaves_like "a cleanroom setter", :license, %{license 'Apache 2.0'}
     it_behaves_like "a cleanroom setter", :license_file, %{license_file 'LICENSES/artistic.txt'}
     it_behaves_like "a cleanroom setter", :skip_transitive_dependency_licensing, %{skip_transitive_dependency_licensing true}
+    it_behaves_like "a cleanroom setter", :dependency_licenses, %{dependency_licenses [{license: "MIT"}]}
     it_behaves_like "a cleanroom setter", :whitelist_file, %{whitelist_file '/opt/whatever'}
     it_behaves_like "a cleanroom setter", :relative_path, %{relative_path '/path/to/extracted'}
     it_behaves_like "a cleanroom setter", :build, %|build {}|
@@ -67,67 +68,73 @@ module Omnibus
 
     describe "with_standard_compiler_flags helper" do
       context "on ubuntu" do
-        before { stub_ohai(platform: "ubuntu", version: "12.04") }
+        before { stub_ohai(platform: "ubuntu", version: "16.04") }
 
         it "sets the defaults" do
           expect(subject.with_standard_compiler_flags).to eq(
             "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
-            "CFLAGS"          => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
         it "overrides LDFLAGS" do
           expect(subject.with_standard_compiler_flags("LDFLAGS" => "foo")).to eq(
             "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
-            "CFLAGS"          => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
         it "overrides CFLAGS" do
           expect(subject.with_standard_compiler_flags("CFLAGS" => "foo")).to eq(
             "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
-            "CFLAGS"          => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
         it "overrides CXXFLAGS" do
           expect(subject.with_standard_compiler_flags("CXXFLAGS" => "foo")).to eq(
             "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
-            "CFLAGS"          => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
         it "overrides CPPFLAGS" do
           expect(subject.with_standard_compiler_flags("CPPFLAGS" => "foo")).to eq(
             "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
-            "CFLAGS"          => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
         it "preserves anything else" do
           expect(subject.with_standard_compiler_flags("numberwang" => 4)).to eq(
             "numberwang"      => 4,
             "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
-            "CFLAGS"          => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
       end
@@ -149,7 +156,8 @@ module Omnibus
             "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib -static-libgcc",
             "LD_OPTIONS"      => "-R/opt/project/embedded/lib",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
 
@@ -175,72 +183,25 @@ module Omnibus
               "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib -static-libgcc",
               "LD_OPTIONS"      => "-R/opt/project/embedded/lib",
               "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
-            )
-          end
-        end
-      end
-
-      context "on solaris_10" do
-        before do
-          stub_ohai(platform: "solaris2", version: "5.10") do |data|
-            # For some reason, this isn't set in Fauxhai
-            data["platform"] = "solaris2"
-          end
-        end
-
-        it "sets the defaults" do
-          expect(subject.with_standard_compiler_flags).to eq(
-            "CC"              => "gcc -static-libgcc",
-            "LDFLAGS"         => "-R/opt/project/embedded/lib -L/opt/project/embedded/lib -static-libgcc",
-            "CFLAGS"          => "-I/opt/project/embedded/include",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include",
-            "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "LD_OPTIONS"      => "-R/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
-          )
-        end
-
-        context "when loader mapping file is specified" do
-          # Let the unit tests run on windows where auto-path translation occurs.
-          let(:project_root) { File.join(tmp_path, "/root/project") }
-          before do
-            stub_ohai(platform: "solaris2", version: "5.10") do |data|
-              # For some reason, this isn't set in Fauxhai
-              data["platform"] = "solaris2"
-            end
-            Config.project_root(project_root)
-            Config.solaris_linker_mapfile("files/mapfile/solaris")
-            allow(File).to receive(:exist?).and_return(true)
-          end
-
-          it "sets LD_OPTIONS correctly" do
-            expect(subject.with_standard_compiler_flags).to eq(
-              "CC"              => "gcc -static-libgcc",
-              "LDFLAGS"         => "-R/opt/project/embedded/lib -L/opt/project/embedded/lib -static-libgcc",
-              "CFLAGS"          => "-I/opt/project/embedded/include",
-              "CXXFLAGS"        => "-I/opt/project/embedded/include",
-              "CPPFLAGS"        => "-I/opt/project/embedded/include",
-              "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-              "LD_OPTIONS"      => "-R/opt/project/embedded/lib -M #{project_root}/files/mapfile/solaris",
-              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+              "OMNIBUS_INSTALL_DIR" => "/opt/project"
             )
           end
         end
       end
 
       context "on mac_os_x" do
-        before { stub_ohai(platform: "mac_os_x", version: "10.9.2") }
+        before { stub_ohai(platform: "mac_os_x", version: "10.13") }
 
         it "sets the defaults" do
           expect(subject.with_standard_compiler_flags).to eq(
-            "LDFLAGS"         => "-L/opt/project/embedded/lib",
-            "CFLAGS"          => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2",
+            "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
       end
@@ -265,24 +226,28 @@ module Omnibus
             "OBJECT_MODE"     => "64",
             "ARFLAGS"         => "-X64 cru",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
       end
 
-      context "on freebsd 9" do
+      context "on freebsd 10" do
         before do
-          stub_ohai(platform: "freebsd", version: "9.2")
+          stub_ohai(platform: "freebsd", version: "10.4")
         end
 
         it "sets the defaults" do
           expect(subject.with_standard_compiler_flags).to eq(
-            "CFLAGS" => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"  => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"  => "-I/opt/project/embedded/include -O2",
+            "CC" => "clang",
+            "CFLAGS" => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"  => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"  => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXX" => "clang++",
             "LDFLAGS" => "-L/opt/project/embedded/lib",
             "LD_RUN_PATH" => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
 
@@ -290,36 +255,85 @@ module Omnibus
           before do
             allow(subject).to receive(:which).and_return("/usr/local/bin/gcc49")
           end
-
-          it "sets the compiler args" do
-            expect(subject.with_standard_compiler_flags).to eq(
-              "CC"              => "gcc49",
-              "CXX"             => "g++49",
-              "CFLAGS" => "-I/opt/project/embedded/include -O2",
-              "CXXFLAGS"  => "-I/opt/project/embedded/include -O2",
-              "CPPFLAGS"  => "-I/opt/project/embedded/include -O2",
-              "LDFLAGS" => "-L/opt/project/embedded/lib",
-              "LD_RUN_PATH" => "/opt/project/embedded/lib",
-              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig" )
-          end
         end
       end
 
       context "on freebsd 10" do
         before do
-          stub_ohai(platform: "freebsd", version: "10.0")
+          stub_ohai(platform: "freebsd", version: "10.4")
         end
 
         it "Clang as the default compiler" do
           expect(subject.with_standard_compiler_flags).to eq(
             "CC"              => "clang",
             "CXX"             => "clang++",
-            "CFLAGS"          => "-I/opt/project/embedded/include -O2",
-            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2",
-            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
             "LDFLAGS"         => "-L/opt/project/embedded/lib",
             "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
+          )
+        end
+      end
+
+      context "on sles 11" do
+        before do
+          # sles identifies as suse
+          stub_ohai(platform: "suse", version: "11.4")
+          allow(subject).to receive(:which).with("gcc-4.8").and_return(false)
+        end
+        it "sets the defaults" do
+          expect(subject.with_standard_compiler_flags).to eq(
+            "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "LD_RUN_PATH"     => "/opt/project/embedded/lib",
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
+          )
+        end
+
+        context "with gcc 4.8 installed" do
+
+          before do
+            allow(subject).to receive(:which).and_return("/usr/bin/gcc-4.8")
+          end
+
+          it "sets the compiler args" do
+            expect(subject.with_standard_compiler_flags).to eq(
+              "CC"              => "gcc-4.8",
+              "CXX"             => "g++-4.8",
+              "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
+              "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+              "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+              "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+              "LD_RUN_PATH"     => "/opt/project/embedded/lib",
+              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+              "OMNIBUS_INSTALL_DIR" => "/opt/project"
+            )
+          end
+        end
+      end
+
+      context "on sles 12" do
+        before do
+          # sles identifies as suse
+          stub_ohai(platform: "suse", version: "12.2")
+          allow(subject).to receive(:which).with("gcc-4.8").and_return(true)
+        end
+
+        it "sets the defaults" do
+          expect(subject.with_standard_compiler_flags).to eq(
+            "LDFLAGS"         => "-Wl,-rpath,/opt/project/embedded/lib -L/opt/project/embedded/lib",
+            "CFLAGS"          => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CXXFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "CPPFLAGS"        => "-I/opt/project/embedded/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector",
+            "LD_RUN_PATH"     => "/opt/project/embedded/lib",
+            "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+            "OMNIBUS_INSTALL_DIR" => "/opt/project"
           )
         end
       end
@@ -328,19 +342,20 @@ module Omnibus
         let(:win_arch_i386) { true }
 
         before do
-          stub_ohai(platform: "windows", version: "2012")
+          stub_ohai(platform: "windows", version: "2012R2")
           allow(subject).to receive(:windows_arch_i386?).and_return(win_arch_i386)
         end
 
         context "in 32-bit mode" do
           it "sets the default" do
             expect(subject.with_standard_compiler_flags).to eq(
-              "CFLAGS"          => "-I/opt/project/embedded/include -m32 -O2 -fno-lto -march=i686",
-              "CXXFLAGS"        => "-I/opt/project/embedded/include -m32 -O2 -fno-lto -march=i686",
-              "CPPFLAGS"        => "-I/opt/project/embedded/include -m32 -O2 -fno-lto -march=i686",
+              "CFLAGS"          => "-I/opt/project/embedded/include -m32 -O3 -march=i686",
+              "CXXFLAGS"        => "-I/opt/project/embedded/include -m32 -O3 -march=i686",
+              "CPPFLAGS"        => "-I/opt/project/embedded/include -m32 -O3 -march=i686",
               "LDFLAGS"         => "-L/opt/project/embedded/lib -m32 -fno-lto",
               "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+              "OMNIBUS_INSTALL_DIR" => "/opt/project"
             )
           end
         end
@@ -350,12 +365,13 @@ module Omnibus
 
           it "sets the default" do
             expect(subject.with_standard_compiler_flags).to eq(
-              "CFLAGS"          => "-I/opt/project/embedded/include -m64 -O2 -fno-lto -march=x86-64",
-              "CXXFLAGS"        => "-I/opt/project/embedded/include -m64 -O2 -fno-lto -march=x86-64",
-              "CPPFLAGS"        => "-I/opt/project/embedded/include -m64 -O2 -fno-lto -march=x86-64",
+              "CFLAGS"          => "-I/opt/project/embedded/include -m64 -O3 -march=x86-64",
+              "CXXFLAGS"        => "-I/opt/project/embedded/include -m64 -O3 -march=x86-64",
+              "CPPFLAGS"        => "-I/opt/project/embedded/include -m64 -O3 -march=x86-64",
               "LDFLAGS"         => "-L/opt/project/embedded/lib -m64 -fno-lto",
               "LD_RUN_PATH"     => "/opt/project/embedded/lib",
-              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig"
+              "PKG_CONFIG_PATH" => "/opt/project/embedded/lib/pkgconfig",
+              "OMNIBUS_INSTALL_DIR" => "/opt/project"
             )
           end
         end
@@ -408,7 +424,7 @@ module Omnibus
 
       context "on Windows" do
         before do
-          stub_ohai(platform: "windows", version: "2012")
+          stub_ohai(platform: "windows", version: "2012R2")
         end
 
         let(:separator) { ";" }
@@ -425,9 +441,10 @@ module Omnibus
             allow(ENV).to receive(:keys).and_return(%w{ Path PATH })
           end
 
-          it "returns a path key of `Path`" do
-            expect(subject.with_embedded_path).to eq(
-              "Path" => prepended_path
+          it "and raises an error when PATH is also set" do
+            expect { subject.with_embedded_path }.to raise_error(
+              RuntimeError,
+              "The current omnibus environment has multiple PATH/Path variables."
             )
           end
         end
@@ -446,8 +463,8 @@ module Omnibus
       end
     end
 
-    describe '#ohai' do
-      before { stub_ohai(platform: "ubuntu", version: "12.04") }
+    describe "#ohai" do
+      before { stub_ohai(platform: "ubuntu", version: "16.04") }
 
       it "is a DSL method" do
         expect(subject).to have_exposed_method(:ohai)
@@ -516,7 +533,7 @@ module Omnibus
       end
     end
 
-    describe '#<=>' do
+    describe "#<=>" do
       let(:zlib)   { described_class.new(project).tap { |s| s.name("zlib") } }
       let(:erchef) { described_class.new(project).tap { |s| s.name("erchef") } }
       let(:bacon)  { described_class.new(project).tap { |s| s.name("bacon") } }
@@ -527,10 +544,10 @@ module Omnibus
       end
     end
 
-    describe '#whitelist_file' do
+    describe "#whitelist_file" do
       it "appends to the whitelist_files array" do
         expect(subject.whitelist_files.size).to eq(0)
-        subject.whitelist_file(/foo\/bar/)
+        subject.whitelist_file(%r{foo/bar})
         expect(subject.whitelist_files.size).to eq(1)
       end
 
@@ -538,6 +555,36 @@ module Omnibus
         subject.whitelist_file "foo/bar"
         expect(subject.whitelist_files.size).to eq(1)
         expect(subject.whitelist_files.first).to be_kind_of(Regexp)
+      end
+    end
+
+    describe "#bin_dirs" do
+      it "sets bin_dirs" do
+        subject.bin_dirs ["my_bin_dir"]
+        expect(subject.bin_dirs).to eq(["my_bin_dir"])
+        expect(subject.bin_dirs).to be_kind_of(Array)
+      end
+
+      context "bin_dirs is not set" do
+        it "returns default values" do
+          expect(subject.bin_dirs).to eq(["/opt/project/bin", "/opt/project/embedded/bin"])
+          expect(subject.bin_dirs).to be_kind_of(Array)
+        end
+      end
+    end
+
+    describe "#lib_dirs" do
+      it "sets lib_dirs" do
+        subject.lib_dirs ["my_lib_dir"]
+        expect(subject.lib_dirs).to eq(["my_lib_dir"])
+        expect(subject.lib_dirs).to be_kind_of(Array)
+      end
+
+      context "lib_dirs is not set" do
+        it "returns default values" do
+          expect(subject.lib_dirs).to eq(["/opt/project/embedded/lib"])
+          expect(subject.lib_dirs).to be_kind_of(Array)
+        end
       end
     end
 
@@ -636,7 +683,7 @@ module Omnibus
       end
     end
 
-    describe '#fetcher' do
+    describe "#fetcher" do
       before do
         expect(Omnibus::Fetcher).to receive(:resolve_version).with("1.2.3", source).and_return("1.2.8")
       end
@@ -744,6 +791,40 @@ module Omnibus
           end
         end
       end
+
+      context "when given source is a local file path" do
+        let(:source) do
+          {
+            file: "../foo.tar.gz",
+          }
+        end
+
+        context "when relative_path is the same as name" do
+          let(:rel_path) { "software" }
+
+          it "for back-compat, changes fetch_dir" do
+            subject.send(:fetcher)
+            expect(subject.project_dir).to eq(File.expand_path("#{Config.source_dir}/software/software"))
+          end
+
+          it "sets the fetcher project_dir to project_dir" do
+            expect(subject.send(:fetcher).project_dir).to eq(File.expand_path("#{Config.source_dir}/software/software"))
+          end
+        end
+
+        context "when relative_path is different from name" do
+          let(:rel_path) { "foo" }
+
+          it "ignores back-compat and leaves fetch_dir alone" do
+            subject.send(:fetcher)
+            expect(subject.project_dir).to eq(File.expand_path("#{Config.source_dir}/software/foo"))
+          end
+
+          it "sets the fetcher project_dir to project_dir" do
+            expect(subject.send(:fetcher).project_dir).to eq(File.expand_path("#{Config.source_dir}/software/foo"))
+          end
+        end
+      end
     end
 
     describe "#canonicalize_source" do
@@ -760,7 +841,7 @@ module Omnibus
       end
     end
 
-    describe '#shasum' do
+    describe "#shasum" do
       context "when a filepath is given" do
         let(:path) { "/software.rb" }
         let(:file) { double(File) }

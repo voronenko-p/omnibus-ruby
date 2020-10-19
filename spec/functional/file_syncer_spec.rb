@@ -2,7 +2,7 @@ require "spec_helper"
 
 module Omnibus
   describe FileSyncer do
-    describe '#glob' do
+    describe "#glob" do
       before do
         FileUtils.mkdir_p(File.join(tmp_path, "folder"))
         FileUtils.mkdir_p(File.join(tmp_path, ".hidden_folder"))
@@ -39,7 +39,7 @@ module Omnibus
       end
     end
 
-    describe '#sync' do
+    describe "#sync" do
       let(:source) do
         source = File.join(tmp_path, "source")
         FileUtils.mkdir_p(source)
@@ -56,6 +56,14 @@ module Omnibus
         FileUtils.touch(File.join(source, ".dot_folder", "file_f"))
 
         FileUtils.touch(File.join(source, ".file_g"))
+
+        FileUtils.mkdir_p(File.join(source, "nested", "deep", "folder"))
+        FileUtils.touch(File.join(source, "nested", "deep", "folder", "file_h"))
+        FileUtils.touch(File.join(source, "nested", "deep", "folder", "file_i"))
+
+        FileUtils.mkdir_p(File.join(source, "nested", "deep", "deep", "folder"))
+        FileUtils.touch(File.join(source, "nested", "deep", "deep", "folder", "file_j"))
+        FileUtils.touch(File.join(source, "nested", "deep", "deep", "folder", "file_k"))
         source
       end
 
@@ -77,21 +85,21 @@ module Omnibus
 
       context "when destination file exists" do
 
-        let(:source) {
+        let(:source) do
           s = File.join(tmp_path, "source")
           FileUtils.mkdir_p(s)
           p = create_file(s, "read-only-file") { "new" }
           FileUtils.chmod(0400, p)
           s
-        }
+        end
 
-        let(:destination) {
+        let(:destination) do
           dest = File.join(tmp_path, "destination")
           FileUtils.mkdir_p(dest)
           create_file(dest, "read-only-file") { "old" }
           FileUtils.chmod(0400, File.join(dest, "read-only-file"))
           dest
-        }
+        end
 
         it "copies over a read-only file" do
           described_class.sync(source, destination)
@@ -231,6 +239,40 @@ module Omnibus
           expect("#{destination}/.dot_folder").to_not be_a_directory
           expect("#{destination}/.dot_folder/file_f").to_not be_a_file
           expect("#{destination}/.file_g").to be_a_file
+        end
+
+        it "does not copy files and folders that match the wildcard pattern" do
+          described_class.sync(source, destination, exclude: "nested/*/folder")
+
+          expect("#{destination}/file_a").to be_a_file
+          expect("#{destination}/file_b").to be_a_file
+          expect("#{destination}/file_c").to be_a_file
+          expect("#{destination}/folder/file_d").to be_a_file
+          expect("#{destination}/folder/file_e").to be_a_file
+          expect("#{destination}/.dot_folder").to be_a_directory
+          expect("#{destination}/.dot_folder/file_f").to be_a_file
+          expect("#{destination}/.file_g").to be_a_file
+          expect("#{destination}/nested/deep/folder/file_h").to_not be_a_file
+          expect("#{destination}/nested/deep/folder/file_i").to_not be_a_file
+          expect("#{destination}/nested/deep/deep/folder/file_j").to be_a_file
+          expect("#{destination}/nested/deep/deep/folder/file_k").to be_a_file
+        end
+
+        it "does not copy files and folders that match the super wildcard pattern" do
+          described_class.sync(source, destination, exclude: "nested/**/folder")
+
+          expect("#{destination}/file_a").to be_a_file
+          expect("#{destination}/file_b").to be_a_file
+          expect("#{destination}/file_c").to be_a_file
+          expect("#{destination}/folder/file_d").to be_a_file
+          expect("#{destination}/folder/file_e").to be_a_file
+          expect("#{destination}/.dot_folder").to be_a_directory
+          expect("#{destination}/.dot_folder/file_f").to be_a_file
+          expect("#{destination}/.file_g").to be_a_file
+          expect("#{destination}/nested/deep/folder/file_h").to_not be_a_file
+          expect("#{destination}/nested/deep/folder/file_i").to_not be_a_file
+          expect("#{destination}/nested/deep/deep/folder/file_j").to_not be_a_file
+          expect("#{destination}/nested/deep/deep/folder/file_k").to_not be_a_file
         end
 
         it "removes existing files and folders in destination" do

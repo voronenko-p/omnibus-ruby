@@ -1,4 +1,5 @@
-# Copyright 2012-2014 Chef Software, Inc.
+
+# Copyright 2012-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 
 require "omnibus/sugarable"
+require "omnibus/whitelist"
 begin
   require "pedump"
 rescue LoadError
@@ -582,7 +584,7 @@ module Omnibus
     #
     def health_check_ldd
       regexp_ends = ".*(" + IGNORED_ENDINGS.map { |e| e.gsub(/\./, '\.') }.join("|") + ")$"
-      regexp_patterns = IGNORED_PATTERNS.map { |e| ".*" + e.gsub(/\//, '\/') + ".*" }.join("|")
+      regexp_patterns = IGNORED_PATTERNS.map { |e| ".*" + e.gsub(%r{/}, '\/') + ".*" }.join("|")
       regexp = regexp_ends + "|" + regexp_patterns
 
       current_library = nil

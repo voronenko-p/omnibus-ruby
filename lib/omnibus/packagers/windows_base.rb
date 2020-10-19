@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Chef Software, Inc.
+# Copyright 2016-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ module Omnibus
   class Packager::WindowsBase < Packager::Base
     DEFAULT_TIMESTAMP_SERVERS = ["http://timestamp.digicert.com",
                                  "http://timestamp.verisign.com/scripts/timestamp.dll",
-                                 "http://timestamp.globalsign.com/scripts/timstamp.dll"]
+                                 "http://timestamp.globalsign.com/scripts/timstamp.dll"].freeze
 
     #
     # Set the signing certificate name
@@ -64,11 +64,11 @@ module Omnibus
             raise InvalidValue.new(:params, "be a Hash")
           end
 
-          valid_keys = [:store, :timestamp_servers, :machine_store, :algorithm]
+          valid_keys = %i{store timestamp_servers machine_store algorithm}
           invalid_keys = params.keys - valid_keys
           unless invalid_keys.empty?
-            raise InvalidValue.new(:params, "contain keys from [#{valid_keys.join(', ')}]. "\
-                                   "Found invalid keys [#{invalid_keys.join(', ')}]")
+            raise InvalidValue.new(:params, "contain keys from [#{valid_keys.join(", ")}]. "\
+                                   "Found invalid keys [#{invalid_keys.join(", ")}]")
           end
 
           if !params[:machine_store].nil? && !(
@@ -81,7 +81,7 @@ module Omnibus
         end
 
         @signing_identity[:store] = params[:store] || "My"
-        @signing_identity[:algorithm] = params[:algorithm] || "SHA1"
+        @signing_identity[:algorithm] = params[:algorithm] || "SHA256"
         servers = params[:timestamp_servers] || DEFAULT_TIMESTAMP_SERVERS
         @signing_identity[:timestamp_servers] = [servers].flatten
         @signing_identity[:machine_store] = params[:machine_store] || false
@@ -209,7 +209,7 @@ module Omnibus
 
         break if success
       end
-      raise FailedToSignWindowsPackage.new if !success
+      raise FailedToSignWindowsPackage.new unless success
     end
 
     def try_sign(package_file, url)
@@ -266,7 +266,7 @@ module Omnibus
       return "CN=#{project.package_name}" unless signing_identity
 
       store = machine_store? ? "LocalMachine" : "CurrentUser"
-      cmd = Array.new.tap do |arr|
+      cmd = [].tap do |arr|
         arr << "powershell.exe"
         arr << "-ExecutionPolicy Bypass"
         arr << "-NoProfile"

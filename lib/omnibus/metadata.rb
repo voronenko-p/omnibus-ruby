@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Chef Software, Inc.
+# Copyright 2014-2018 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-require "ffi_yajl"
+require "ffi_yajl" unless defined?(FFI_Yajl)
 
 module Omnibus
   class Metadata
@@ -167,16 +167,17 @@ module Omnibus
       #   the platform shortname. this might be an Ohai-returned platform or
       #   platform family but it also might be a shortname like `el`
       #
+      # rubocop:disable Lint/DuplicateCaseCondition
       def truncate_platform_version(platform_version, platform)
         case platform
-        when "centos", "debian", "el", "fedora", "freebsd", "omnios", "pidora", "raspbian", "rhel", "sles", "suse", "smartos", "nexus", "ios_xr"
+        when "centos", "debian", "el", "fedora", "freebsd", "omnios", "pidora", "raspbian", "rhel", "sles", "suse", "smartos"
           # Only want MAJOR (e.g. Debian 7, OmniOS r151006, SmartOS 20120809T221258Z)
           platform_version.split(".").first
-        when "aix", "gentoo", "mac_os_x", "openbsd", "slackware", "solaris2", "opensuse", "ubuntu"
+        when "aix", "alpine", "mac_os_x", "openbsd", "slackware", "solaris2", "opensuse", "opensuseleap", "ubuntu", "amazon"
           # Only want MAJOR.MINOR (e.g. Mac OS X 10.9, Ubuntu 12.04)
           platform_version.split(".")[0..1].join(".")
-        when "arch"
-          # Arch Linux does not have a platform_version ohai attribute, it is rolling release (lsb_release -r)
+        when "arch", "gentoo", "kali"
+          # Arch Linux / Gentoo do not have a platform_version ohai attribute, they are rolling release (lsb_release -r)
           "rolling"
         when "windows"
           # Windows has this really awesome "feature", where their version numbers
@@ -186,7 +187,7 @@ module Omnibus
           # than the platform version. Take a look at the following file for the
           # details:
           #
-          #   https://github.com/opscode/chef/blob/master/lib/chef/win32/version.rb
+          #   https://github.com/chef/chef/blob/master/lib/chef/win32/version.rb
           #
           # As we don't need to be exact here the simple mapping below is based on:
           #
