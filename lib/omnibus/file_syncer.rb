@@ -19,6 +19,7 @@ require "fileutils" unless defined?(FileUtils)
 module Omnibus
   module FileSyncer
     extend self
+    include Logging
 
     # Files to be ignored during a directory globbing
     IGNORED_FILES = %w{. ..}.freeze
@@ -65,6 +66,10 @@ module Omnibus
       includes = Array(options[:include]).map do |include|
         [include, "#{include}/*"]
       end.flatten
+
+      log.info(log_key) { "All files under #{source}" }
+      log.info(log_key) { "Excludes: #{excludes}" }
+      log.info(log_key) { "Includes: #{includes}" }
 
       source_files = glob(File.join(source, "**/*"))
       source_files = source_files.reject do |source_file|
