@@ -459,6 +459,7 @@ module Omnibus
         variables: {
           name: safe_base_package_name(debug),
           version: safe_version,
+          epoch: safe_epoch,
           iteration: safe_build_iteration,
           vendor: vendor,
           license: license,

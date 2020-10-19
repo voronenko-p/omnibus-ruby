@@ -167,10 +167,7 @@ module Omnibus
       @skip_package ||= val
     end
     expose :skip_packager
-<<<<<<< HEAD
-=======
 
->>>>>>> upstream/master
     #
     # @!endgroup
     # --------------------------------------------------

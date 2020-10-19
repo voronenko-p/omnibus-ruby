@@ -65,4 +65,3 @@ Lint/UselessAssignment:
     - 'lib/omnibus/file_syncer.rb'
     - 'lib/omnibus/licensing.rb'
     - 'lib/omnibus/software.rb'
->>>>>>> upstream/master

@@ -403,7 +403,7 @@ module Omnibus
         extra_keys = val.keys - [
           :git, :file, :path, :url, # fetcher types
           :md5, :sha1, :sha256, :sha512, # hash type - common to all fetchers
-          :cookie, :warning, :unsafe, :extract, :target_filename, :cached_name, :authorization # used by net_fetcher
+          :cookie, :warning, :unsafe, :extract, :target_filename, :cached_name, :authorization, # used by net_fetcher
           :options, # used by path_fetcher
           :submodules, :always_fetch_tags # used by git_fetcher
         ]

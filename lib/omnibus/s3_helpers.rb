@@ -89,7 +89,6 @@ module Omnibus
       end
 
       #
-<<<<<<< HEAD
       # Create credentials object based on credential profile or access key
       # parameters for use by the client object.
       #
@@ -159,20 +158,11 @@ module Omnibus
       #
       def store_object(key, content, content_md5, acl)
         bucket.put_object({
-<<<<<<< HEAD
-                            key: key,
-                            body: content,
-                            content_md5: to_base64_digest(content_md5),
-                            acl: acl,
-                          })
-        true
-=======
           key: key,
           body: content,
           content_md5: to_base64_digest(content_md5),
           acl: acl,
         })
->>>>>>> upstream/master
       end
 
       #
